@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/urielkelman/taller2-auth-server.svg?token=tFcmLjoZ6PFesBqLEXNZ&branch=master)](https://travis-ci.com/urielkelman/taller2-auth-server)
+[![Build Status](https://travis-ci.com/urielkelman/taller2-auth-server.svg?token=tFcmLjoZ6PFesBqLEXNZ&branch=develop)](https://travis-ci.com/urielkelman/taller2-auth-server)
 
 # Chotuve Auth Server
 
