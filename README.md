@@ -3,7 +3,6 @@
 La app se crea actualmente en create_application.py, eventualmente necesitara recibir parametros para crearse de alguna config, cuando eso suceda se puede mejorar.
 
 To-dos para poder empezar a iterar productivamente sobre esto:
-* Unit tests
 * Deploy a Heroku
 * CI
 
@@ -22,6 +21,16 @@ Podemos extender el logueo en el futuro a gusto, cambiando esta convencion y
 usando las jerarquias de los paquetes para discriminar el trato del log.
 
 Actualmente la configuracion permite loguear solo desde los paquetes en src. (ver *config/logging_conf.ini*)
+
+## Para correr unit tests
+
+Los unit tests deberan estar en la carpeta test, corren con pytest:
+
+```
+pytest test
+```
+
+Es importante correr esto desde la raiz del repo ya que es el run path.
 
 ## Para correr la app
 
