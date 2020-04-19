@@ -6,7 +6,22 @@ To-dos para poder empezar a iterar productivamente sobre esto:
 * Unit tests
 * Deploy a Heroku
 * CI
-* Logging
+
+## Logging
+
+Una [convencion de python](https://docs.python.org/3/howto/logging.html) es crear un logger por cada clase diferenciada de la siguiente forma:
+
+```
+logger = logging.getLogger(__name__)
+```
+
+Vamos a mantener esa convencion para cada clase y loggear con eso.
+Python permite configurar para diferenciado por clase y nivel de log tirar 
+los logs a archivos rotativos, sumologic, cualquier api, etc.
+Podemos extender el logueo en el futuro a gusto, cambiando esta convencion y 
+usando las jerarquias de los paquetes para discriminar el trato del log.
+
+Actualmente la configuracion permite loguear solo desde los paquetes en src. (ver *config/logging_conf.ini*)
 
 ## Para correr la app
 
@@ -19,7 +34,7 @@ python __main__.py
 Para correr la app con gunicorn:
 
 ```
-gunicorn -k sync --workers 3 --bind 0.0.0.0:8080 create_application:create_application
+gunicorn -k sync --workers 3 --bind 0.0.0.0:8080 'create_application:create_application()'
 ```
 
 * `-k` es para indicar el tipo de workers, queremos sync porque andan mejor que el default

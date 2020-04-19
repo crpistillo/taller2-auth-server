@@ -1,5 +1,10 @@
 from flask import Flask
 from src.controller import Controller
+from logging.config import fileConfig
+
+
+fileConfig('config/logging_conf.ini')
+
 
 def create_application():
     controller = Controller()

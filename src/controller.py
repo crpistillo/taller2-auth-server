@@ -1,5 +1,7 @@
+import logging
 
 class Controller:
+    logger = logging.getLogger(__name__)
     def __init__(self):
         """
         Here the init should receive all the parameters needed to know how to answer all the queries
@@ -12,4 +14,5 @@ class Controller:
 
         :return: a tuple with the text and the status to return
         """
+        self.logger.debug("Api health asked")
         return "Everything ok", 200
