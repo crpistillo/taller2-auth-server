@@ -1,0 +1,1 @@
+web: gunicorn -k sync --workers 3 --bind 0.0.0.0:8080 'create_application:create_application()'

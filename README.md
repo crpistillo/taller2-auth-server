@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/urielkelman/taller2-auth-server.svg?token=tFcmLjoZ6PFesBqLEXNZ&branch=master)](https://travis-ci.com/urielkelman/taller2-auth-server)
+
 # Chotuve Auth Server
 
 La app se crea actualmente en create_application.py, eventualmente necesitara recibir parametros para crearse de alguna config, cuando eso suceda se puede mejorar.
@@ -51,3 +53,7 @@ gunicorn -k sync --workers 3 --bind 0.0.0.0:8080 'create_application:create_appl
 y deberia usarse flask para debuggear me parece prudente dejarlo en 3 que seria similar a prod
 * `--bind` le indica a que host y puerto mapearlo
 * `create_application:create_application` es la ruta a donde importar la app de flask
+
+## Deploy de la app a Heroku
+
+La config del deploy esta en el Procfile
