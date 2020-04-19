@@ -5,7 +5,9 @@ from .model.user import User
 from src.database.exceptions.user_not_found_error import UserNotFoundError
 from flask import request
 
+
 USER_NOT_FOUND_MESSAGE = "User with email %s not found in the database"
+USER_ALREADY_REGISTERED_MESSAGE = "User with email %s is already registered"
 
 class Controller:
     logger = logging.getLogger(__name__)
@@ -22,6 +24,11 @@ class Controller:
         """
         assert request.is_json
         content = request.get_json()
+        try:
+            self.database.search_user(content["email"])
+            return USER_ALREADY_REGISTERED_MESSAGE % content["email"], 400
+        except UserNotFoundError:
+            pass
         secured_password = SecuredPassword.from_raw_password(content["password"])
         user = User(email=content["email"], fullname=content["fullname"],
                     phone_number=content["phone_number"], photo=content["photo"],
