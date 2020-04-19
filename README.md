@@ -56,4 +56,22 @@ y deberia usarse flask para debuggear me parece prudente dejarlo en 3 que seria 
 
 ## Deploy de la app a Heroku
 
-La config del deploy esta en el Procfile
+La config del deploy esta en el Procfile.
+
+Actualmente el deploy es manual, luego de instalar heroku cli y estar logueado hay que configurar el remote "heroku" por unica vez:
+
+```
+heroku git:remote -a tuapp
+```
+
+Despues para deployar:
+
+```
+git push heroku master
+```
+
+Finalmente para ver los logs:
+
+```
+heroku logs
+```
