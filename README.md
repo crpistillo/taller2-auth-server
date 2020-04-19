@@ -4,10 +4,6 @@
 
 La app se crea actualmente en create_application.py, eventualmente necesitara recibir parametros para crearse de alguna config, cuando eso suceda se puede mejorar.
 
-To-dos para poder empezar a iterar productivamente sobre esto:
-* Deploy a Heroku
-* CI
-
 ## Logging
 
 Una [convencion de python](https://docs.python.org/3/howto/logging.html) es crear un logger por cada clase diferenciada de la siguiente forma:
