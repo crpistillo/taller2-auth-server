@@ -15,7 +15,6 @@ class Database:
 
         :param user: the user to save
         """
-        pass
 
     @abstractmethod
     def search_user(self, email: str) -> User:
@@ -27,4 +26,3 @@ class Database:
         :param email: the email to search the user
         :return: an User object
         """
-        pass

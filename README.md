@@ -20,7 +20,7 @@ usando las jerarquias de los paquetes para discriminar el trato del log.
 
 Actualmente la configuracion permite loguear solo desde los paquetes en src. (ver *config/logging_conf.ini*)
 
-## Para correr unit tests
+## Para correr tests
 
 Los unit tests deberan estar en la carpeta test, corren con pytest:
 
@@ -29,6 +29,13 @@ pytest test
 ```
 
 Es importante correr esto desde la raiz del repo ya que es el run path.
+
+Para correr coverage report:
+
+```
+pip install -r requirements-travis.txt
+pytest --cov=. --cov-report html test/
+```
 
 ## Para correr la app
 
