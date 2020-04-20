@@ -1,3 +1,4 @@
+import json
 import logging
 from .database.database import Database
 from .model.secured_password import SecuredPassword
@@ -92,8 +93,8 @@ class Controller:
             return USER_NOT_FOUND_MESSAGE % content["email"], 400
 
         serialized_user_dic = SerializedUser.from_user(user)._asdict()
-        # remove_keys = ["password", "phone_number"]
-        # [serialized_user_dic.pop(key) for key in remove_keys]
+        remove_keys = ["password", "phone_number"]
+        [serialized_user_dic.pop(key) for key in remove_keys]
         return json.dumps(serialized_user_dic)
 
     def users_profile_update(self):
