@@ -44,3 +44,4 @@ class RamDatabase(Database):
         return User(email=serialized_user.email, fullname=serialized_user.fullname,
                     phone_number=serialized_user.phone_number, photo=serialized_user.photo,
                     secured_password=secured_password)
+

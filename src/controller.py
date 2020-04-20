@@ -6,12 +6,15 @@ from src.database.exceptions.user_not_found_error import UserNotFoundError
 from src.model.exceptions.invalid_phone_number_error import InvalidPhoneNumberError
 from src.model.exceptions.invalid_email_error import InvalidEmailError
 from flask import request
+from src.model.user_token import UserToken
 
 
 USER_NOT_FOUND_MESSAGE = "User with email %s not found in the database"
 USER_ALREADY_REGISTERED_MESSAGE = "User with email %s is already registered"
 USER_INVALID_EMAIL_ERROR_MESSAGE = "Invalid email %s"
 USER_INVALID_PHONE_ERROR_MESSAGE = "Invalid phone number %s for registration of %s"
+WRONG_CREDENTIALS_MESSAGE = "Incorrect password when trying to log in"
+GENERATING_TOKEN_MESSAGE = "Generating token for user with email %s"
 
 
 class Controller:
@@ -22,6 +25,35 @@ class Controller:
         """
         self.database = database
         return
+
+    def users_login(self):
+
+        assert request.is_json
+        content = request.get_json()
+
+        try:
+            user = self.database.search_user(content["email"])
+            secured_password = SecuredPassword.from_raw_password(content["password"])
+
+            if secured_password.__eq__(user.secured_password):
+                self.logger.debug(GENERATING_TOKEN_MESSAGE % content["email"])
+                user_token = UserToken.generate_token(content["email"])
+                self.database.save_user_token(user_token)
+                return user_token.token
+
+            else:
+                self.logger.info(WRONG_CREDENTIALS_MESSAGE)
+                return WRONG_CREDENTIALS_MESSAGE
+
+        except UserNotFoundError:
+            self.logger.debug(USER_NOT_FOUND_MESSAGE % content["email"])
+            return USER_NOT_FOUND_MESSAGE % content["email"], 400
+
+    def users_recover_password(self):
+        pass
+
+    def users_new_password(self):
+        pass
 
     def users_register(self):
         """
@@ -65,6 +97,23 @@ class Controller:
             self.logger.debug(USER_NOT_FOUND_MESSAGE % content["email"])
             return USER_NOT_FOUND_MESSAGE % content["email"], 400
         return user.phone_number
+
+    def users_profile_query(self):
+        assert request.is_json
+        content = request.get_json()
+        try:
+            user = self.database.search_user(content["email"])
+        except UserNotFoundError:
+            self.logger.debug(USER_NOT_FOUND_MESSAGE % content["email"])
+            return USER_NOT_FOUND_MESSAGE % content["email"], 400
+
+        serialized_user_dic = SerializedUser.from_user(user)._asdict()
+        # remove_keys = ["password", "phone_number"]
+        # [serialized_user_dic.pop(key) for key in remove_keys]
+        return json.dumps(serialized_user_dic)
+
+    def users_profile_update(self):
+        pass
 
     def api_health(self):
         """

@@ -1,6 +1,7 @@
 from typing import NoReturn
 from src.model.user import User
 from abc import abstractmethod
+from src.model.user_token import UserToken
 
 class Database:
     """
@@ -25,4 +26,11 @@ class Database:
 
         :param email: the email to search the user
         :return: an User object
+        """
+
+    @abstractmethod
+    def save_user_token(self, user_token: UserToken):
+        """
+        Saves an user_token
+            ...
         """
