@@ -1,5 +1,6 @@
 from typing import NoReturn, Dict
 from src.model.user import User
+from src.model.user_token import UserToken
 from .database import Database
 from .serialized.serialized_user import SerializedUser
 from .exceptions.user_not_found_error import UserNotFoundError
@@ -45,3 +46,9 @@ class RamDatabase(Database):
                     phone_number=serialized_user.phone_number, photo=serialized_user.photo,
                     secured_password=secured_password)
 
+    def save_user_token(self, user_token: UserToken):
+        """
+
+        :param user_token:
+        :return:
+        """

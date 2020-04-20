@@ -33,6 +33,7 @@ class UserToken:
 
         return cls(email, "token")#cambiar por alguna funcion: discutir con gian: jwt?
 
-
+    def get_token(self):
+        return self.token
 
 

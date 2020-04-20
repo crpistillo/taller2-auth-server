@@ -38,3 +38,13 @@ class User:
         self.phone_number = phone_number
         self.photo = photo
         self.secured_password = secured_password
+
+    def password_match(self, other: 'SecuredPassword') -> bool:
+        """
+        Responsible for comparing to SecuredPasswords
+
+        :param other: other secured password
+        :return: a boolean indicating if the password are equal
+        """
+        return other.__eq__(self.secured_password)
+

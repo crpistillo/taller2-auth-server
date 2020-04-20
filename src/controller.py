@@ -34,21 +34,22 @@ class Controller:
 
         try:
             user = self.database.search_user(content["email"])
-            secured_password = SecuredPassword.from_raw_password(content["password"])
-
-            if secured_password.__eq__(user.secured_password):
-                self.logger.debug(GENERATING_TOKEN_MESSAGE % content["email"])
-                user_token = UserToken.generate_token(content["email"])
-                self.database.save_user_token(user_token)
-                return user_token.token
-
-            else:
-                self.logger.info(WRONG_CREDENTIALS_MESSAGE)
-                return WRONG_CREDENTIALS_MESSAGE
 
         except UserNotFoundError:
             self.logger.debug(USER_NOT_FOUND_MESSAGE % content["email"])
             return USER_NOT_FOUND_MESSAGE % content["email"], 400
+
+        secured_password = SecuredPassword.from_raw_password(content["password"])
+
+        if user.password_match(secured_password):
+            self.logger.debug(GENERATING_TOKEN_MESSAGE % content["email"])
+            user_token = UserToken.generate_token(content["email"])
+            self.database.save_user_token(user_token)
+            return user_token.get_token()
+
+        else:
+            self.logger.info(WRONG_CREDENTIALS_MESSAGE)
+            return WRONG_CREDENTIALS_MESSAGE
 
     def users_recover_password(self):
         pass
