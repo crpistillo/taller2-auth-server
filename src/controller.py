@@ -5,6 +5,7 @@ from .model.user import User
 from src.database.exceptions.user_not_found_error import UserNotFoundError
 from src.model.exceptions.invalid_phone_number_error import InvalidPhoneNumberError
 from src.model.exceptions.invalid_email_error import InvalidEmailError
+from src.database.serialized.serialized_user import SerializedUser
 from flask import request
 from src.model.user_token import UserToken
 
@@ -79,24 +80,6 @@ class Controller:
             return USER_INVALID_PHONE_ERROR_MESSAGE % (content["phone_number"], content["email"]), 400
         self.database.save_user(user)
         return "OK"
-
-    def get_user_field(self, field: str):
-        """
-        Gets an user field
-
-        :param field: the field to search
-        :return: the field wanted
-        """
-        # TODO: this does not work with other fields than phone_number, use the real code
-        assert field == "phone_number"
-        assert request.is_json
-        content = request.get_json()
-        try:
-            user = self.database.search_user(content["email"])
-        except UserNotFoundError:
-            self.logger.debug(USER_NOT_FOUND_MESSAGE % content["email"])
-            return USER_NOT_FOUND_MESSAGE % content["email"], 400
-        return user.phone_number
 
     def users_profile_query(self):
         assert request.is_json
