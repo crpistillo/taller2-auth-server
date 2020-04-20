@@ -8,3 +8,4 @@ before_install:
 script: pytest test
 after_success:
   - pytest --cov=. test/
+  - coveralls
