@@ -1,6 +1,4 @@
 import datetime
-import os
-import jwt
 
 class UserToken:
     """
