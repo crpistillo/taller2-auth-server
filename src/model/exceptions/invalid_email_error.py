@@ -1,0 +1,2 @@
+class InvalidEmailError(AttributeError):
+    pass

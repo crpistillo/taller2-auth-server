@@ -3,11 +3,16 @@ from .database.database import Database
 from .model.secured_password import SecuredPassword
 from .model.user import User
 from src.database.exceptions.user_not_found_error import UserNotFoundError
+from src.model.exceptions.invalid_phone_number_error import InvalidPhoneNumberError
+from src.model.exceptions.invalid_email_error import InvalidEmailError
 from flask import request
 
 
 USER_NOT_FOUND_MESSAGE = "User with email %s not found in the database"
 USER_ALREADY_REGISTERED_MESSAGE = "User with email %s is already registered"
+USER_INVALID_EMAIL_ERROR_MESSAGE = "Invalid email %s"
+USER_INVALID_PHONE_ERROR_MESSAGE = "Invalid phone number %s for registration of %s"
+
 
 class Controller:
     logger = logging.getLogger(__name__)
@@ -30,9 +35,16 @@ class Controller:
         except UserNotFoundError:
             pass
         secured_password = SecuredPassword.from_raw_password(content["password"])
-        user = User(email=content["email"], fullname=content["fullname"],
-                    phone_number=content["phone_number"], photo=content["photo"],
-                    secured_password=secured_password)
+        try:
+            user = User(email=content["email"], fullname=content["fullname"],
+                        phone_number=content["phone_number"], photo=content["photo"],
+                        secured_password=secured_password)
+        except InvalidEmailError:
+            self.logger.debug(USER_INVALID_EMAIL_ERROR_MESSAGE % content["email"])
+            return USER_INVALID_EMAIL_ERROR_MESSAGE % content["email"], 400
+        except InvalidPhoneNumberError:
+            self.logger.debug(USER_INVALID_PHONE_ERROR_MESSAGE % (content["phone_number"], content["email"]))
+            return USER_INVALID_PHONE_ERROR_MESSAGE % (content["phone_number"], content["email"]), 400
         self.database.save_user(user)
         return "OK"
 
@@ -40,7 +52,6 @@ class Controller:
         """
         Gets an user field
 
-        :param email: the email to use to search the user
         :param field: the field to search
         :return: the field wanted
         """

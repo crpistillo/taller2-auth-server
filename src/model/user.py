@@ -1,5 +1,12 @@
 from io import BytesIO
 from .secured_password import SecuredPassword
+from .exceptions.invalid_phone_number_error import InvalidPhoneNumberError
+from .exceptions.invalid_email_error import InvalidEmailError
+import re
+
+PHONE_NUMBER_REGEX = "\+?(\s|-|\d)+"
+EMAIL_REGEX = "[^@]+@[^\.]+\..+"
+
 
 class User:
     """
@@ -22,6 +29,10 @@ class User:
         :param secured_password: a SecuredPassword object
         """
         # TODO: validations
+        if not re.fullmatch(PHONE_NUMBER_REGEX, phone_number, re.IGNORECASE):
+            raise InvalidPhoneNumberError
+        if not re.fullmatch(EMAIL_REGEX, email, re.IGNORECASE):
+            raise InvalidEmailError
         self.email = email
         self.fullname = fullname
         self.phone_number = phone_number

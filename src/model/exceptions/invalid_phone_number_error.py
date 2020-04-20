@@ -1,0 +1,2 @@
+class InvalidPhoneNumberError(AttributeError):
+    pass
