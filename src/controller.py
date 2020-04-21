@@ -60,13 +60,10 @@ class Controller:
         self.logger.debug(messages.GENERATING_RECOVERY_TOKEN_MESSAGE % content["email"])
         user_token = UserToken.generate_token(content["email"], "recovery")
         self.database.save_user_token(user_token)
-        EmailService.send_email(user_token) #implementar
-        return messages.TOKEN_SENT_MESSAGE % content["email"]
+        return EmailService.send_email(content["email"], user_token)
 
-        #fijarse si ya se creo un token de password-recovery para este usuario
+        #falta fijarse si ya se creo un token de password-recovery para este usuario
 
-
-        pass
 
     def users_new_password(self):
         pass

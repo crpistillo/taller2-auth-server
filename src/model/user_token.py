@@ -45,4 +45,7 @@ class UserToken:
     def get_token(self):
         return self.token
 
+    def get_type(self):
+        return self.token_type
+
 
