@@ -1,17 +1,16 @@
-import datetime
 import jwt
-import os
+import datetime
+from src.model.user import User
 
-class UserToken:
+class UserRecoveryToken:
     """
     Model entity for the user_token
     """
     email: str
     token: str
     date: str
-    token_type: str
 
-    def __init__(self, email: str, token: str, timestamp: str, token_type: str):
+    def __init__(self, email: str, token: str, timestamp: str):
         """
         UserToken initializer
 
@@ -22,30 +21,25 @@ class UserToken:
         self.email = email
         self.token = token
         self.timestamp = timestamp
-        self.token_type = token_type
 
     @classmethod
-    def generate_token(cls, email: str, token_type: str) -> 'UserToken':
+    def from_user(cls, user: User, recovery_secret_key: str) -> 'UserRecoveryToken':
         """
         Generates a Base64 string encoded for web application
-        :param email: the email associated with the token
-        :param token_type: the context under which the user receives the
-                            token (login,password-recover,etc)
+        :param user: the user for the recovery token
+        :param recovery_secret_key: a recovery secret key to generate the token
         :return: a UserToken
         """
-        time = datetime.datetime.now().__str__()
+        time = datetime.datetime.now().isoformat()
         payload = {
-            "user_email": email,
+            "user_email": user.get_email(),
             "timestamp": time,
-            "type": token_type
+            "secret_key": recovery_secret_key
         }
         generated_token = jwt.encode(payload, 'secret', algorithm='HS256').decode("utf-8")
-        return cls(email, generated_token, time, token_type)
+        return cls(user.get_email(), generated_token, time)
 
     def get_token(self):
         return self.token
-
-    def get_type(self):
-        return self.token_type
 
 

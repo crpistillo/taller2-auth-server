@@ -25,7 +25,7 @@ class SecuredPassword:
         :param raw_password: the password as the users would input it
         :return: a SecuredPassword
         """
-        return cls(hashlib.md5(raw_password.encode("utf-8")).hexdigest())
+        return cls(hashlib.sha512(raw_password.encode("utf-8")).hexdigest())
 
     def __eq__(self, other: 'SecuredPassword') -> bool:
         """

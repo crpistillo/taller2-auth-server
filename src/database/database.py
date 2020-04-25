@@ -1,7 +1,7 @@
 from typing import NoReturn
 from src.model.user import User
 from abc import abstractmethod
-from src.model.user_token import UserToken
+from src.model.user_recovery_token import UserRecoveryToken
 
 class Database:
     """
@@ -29,8 +29,9 @@ class Database:
         """
 
     @abstractmethod
-    def save_user_token(self, user_token: UserToken):
+    def save_user_token(self, user_token: UserRecoveryToken) -> NoReturn:
         """
-        Saves an user_token
-            ...
+        Saves an user recovery token
+
+        :param user_token: the user token to save
         """

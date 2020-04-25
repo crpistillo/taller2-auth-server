@@ -10,8 +10,8 @@ from src.model.exceptions.invalid_phone_number_error import InvalidPhoneNumberEr
 from src.model.exceptions.invalid_email_error import InvalidEmailError
 from src.database.serialized.serialized_user import SerializedUser
 from flask import request
-from src.model.user_token import UserToken
-from .service.email import EmailService
+from src.model.user_recovery_token import UserRecoveryToken
+from .services.email import EmailService
 
 
 class Controller:
@@ -38,7 +38,8 @@ class Controller:
         secured_password = SecuredPassword.from_raw_password(content["password"])
         if user.password_match(secured_password):
             self.logger.debug(messages.GENERATING_LOGIN_TOKEN_MESSAGE % content["email"])
-            user_token = UserToken.generate_token(content["email"], "login")
+            # TODO: change this
+            user_token = UserRecoveryToken.generate_token(content["email"], "login")
             self.database.save_user_token(user_token)
             return user_token.get_token()
         else:
@@ -58,15 +59,11 @@ class Controller:
             self.logger.debug(messages.USER_NOT_FOUND_MESSAGE % content["email"])
             return messages.USER_NOT_FOUND_MESSAGE % content["email"], 400
         self.logger.debug(messages.GENERATING_RECOVERY_TOKEN_MESSAGE % content["email"])
-        user_token = UserToken.generate_token(content["email"], "recovery")
+        user_token = UserRecoveryToken.from_user(user, "recovery")
         self.database.save_user_token(user_token)
-        return EmailService.send_email(content["email"], user_token)
+        return EmailService.send_recovery_email(user, user_token)
 
         #falta fijarse si ya se creo un token de password-recovery para este usuario
-
-
-    def users_new_password(self):
-        pass
 
     def users_register(self):
         """
@@ -106,9 +103,6 @@ class Controller:
         remove_keys = ["password", "phone_number"]
         [serialized_user_dic.pop(key) for key in remove_keys]
         return json.dumps(serialized_user_dic)
-
-    def users_profile_update(self):
-        pass
 
     def api_health(self):
         """
