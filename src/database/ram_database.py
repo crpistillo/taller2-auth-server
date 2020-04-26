@@ -1,3 +1,4 @@
+import hashlib
 from typing import NoReturn, Dict
 from src.model.user import User
 from src.model.user_recovery_token import UserRecoveryToken

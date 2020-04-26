@@ -15,7 +15,7 @@ class User:
     fullname: str
     phone_number: str
     photo: str
-    password: SecuredPassword
+    secured_password: SecuredPassword
     def __init__(self, email: str, fullname: str, phone_number: str, photo: str,
                  secured_password: SecuredPassword):
         """
