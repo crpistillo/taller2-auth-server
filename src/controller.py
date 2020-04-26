@@ -101,7 +101,7 @@ class Controller:
 
         serialized_user_dic = SerializedUser.from_user(user)._asdict()
         #TODO: retrieve real photo
-        serialized_user_dic["photo"] = str(serialized_user_dic["photo"])
+        serialized_user_dic["photo"] = ""
         return json.dumps({k:v for k,v in serialized_user_dic.items() if k!="password"})
 
     def api_health(self):

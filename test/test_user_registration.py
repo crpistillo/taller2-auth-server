@@ -1,5 +1,6 @@
 from create_application import create_application
 import unittest
+import json
 
 class TestUserRegistration(unittest.TestCase):
     def setUp(self) -> None:
@@ -54,8 +55,10 @@ class TestUserRegistration(unittest.TestCase):
             response = c.post('/users/profile_query', data='{"email":"giancafferata@hotmail.com"}',
                               headers={"Content-Type": "application/json"})
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.data.decode(), '{"email": "giancafferata@hotmail.com", "fullname": "Gianmarco Cafferata", '
-                                                     '"photo": ""}')
+            response_json = json.loads(response.data)
+            self.assertEqual(response_json["email"], "giancafferata@hotmail.com")
+            self.assertEqual(response_json["fullname"], "Gianmarco Cafferata")
+            self.assertEqual(response_json["phone_number"], "11 1111-1111")
 
     def test_query_for_inexistent_user(self):
         # TODO: Query for all fields
