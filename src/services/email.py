@@ -12,7 +12,6 @@ class EmailService:
     def __init__(self):
         pass
 
-    @classmethod
     def send_recovery_email(self, user: User, user_token: UserRecoveryToken) -> NoReturn:
         """
 
