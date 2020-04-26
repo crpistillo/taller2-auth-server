@@ -1,1 +1,1 @@
-web: gunicorn -k sync 'create_application:create_application()'
+web: gunicorn -k sync 'create_application:create_application("config/deploy_conf.yml")'

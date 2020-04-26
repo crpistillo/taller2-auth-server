@@ -48,7 +48,7 @@ python __main__.py
 Para correr la app con gunicorn:
 
 ```
-gunicorn -k sync --workers 3 --bind 0.0.0.0:8080 'create_application:create_application()'
+gunicorn -k sync --workers 3 --bind 0.0.0.0:8080 'create_application:create_application("config/deploy_conf.yml")'
 ```
 
 * `-k` es para indicar el tipo de workers, queremos sync porque andan mejor que el default
@@ -56,6 +56,12 @@ gunicorn -k sync --workers 3 --bind 0.0.0.0:8080 'create_application:create_appl
 y deberia usarse flask para debuggear me parece prudente dejarlo en 3 que seria similar a prod
 * `--bind` le indica a que host y puerto mapearlo
 * `create_application:create_application` es la ruta a donde importar la app de flask
+
+Para levantar las env variables de prod (si se tiene el prod.env):
+
+```
+set -o allexport; source prod.env; set +o allexport
+```
 
 ## Deploy de la app a Heroku
 

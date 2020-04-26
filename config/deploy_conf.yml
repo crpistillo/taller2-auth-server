@@ -1,4 +1,4 @@
-database: RamDatabase
+database: PostgresFirebaseDatabase
 
 databases:
   RamDatabase: {}
@@ -7,7 +7,7 @@ databases:
     recovery_token_table_name: "chotuve.user_recovery_token"
     postgr_host_env_name: "POSTGRES_HOST"
     postgr_user_env_name: "POSTGRES_USER"
-    postgr_pass_env_name: "POSTGRES_PASS"
+    postgr_pass_env_name: "POSTGRES_PASSWORD"
     postgr_database_env_name: "POSTGRES_DATABASE"
     firebase_json_env_name: "FIREBASE_JSON"
     firebase_api_key_env_name: "FIREBASE_API_KEY"
