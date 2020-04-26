@@ -60,17 +60,17 @@ class RamDatabase(Database):
         self.tokens[token] = user.get_email()
         return token
 
-    def get_email_by_token(self, login_token: str) -> str:
+    def get_user_by_token(self, login_token: str) -> User:
         """
-        Gets the corresponding email fot a login token
+        Gets the corresponding user fot a login token
             if the login token does not exists it returns a InvalidLoginToken exception
 
         :param login_token: the login token string
-        :return: the email associated
+        :return: the user associated
         """
         if login_token not in self.tokens:
             raise InvalidLoginToken
-        return self.tokens[login_token]
+        return self.search_user(self.tokens[login_token])
 
     def save_recovery_token(self, user_token: UserRecoveryToken) -> NoReturn:
         """

@@ -74,6 +74,23 @@ class PostgresFirebaseDatabase(Database):
                     phone_number=result[2], photo=result[3],
                     secured_password=secured_password)
 
+    def login(self, user: User) -> str:
+        """
+        Logins the user and generates a token valid for future actions
+
+        :param user: the user to login
+        :return: an string token for future authentication
+        """
+
+    def get_user_by_token(self, login_token: str) -> User:
+        """
+        Gets the corresponding user fot a login token
+            if the login token does not exists it returns a InvalidLoginToken exception
+
+        :param login_token: the login token string
+        :return: the user associated
+        """
+
     def save_recovery_token(self, user_token: UserRecoveryToken) -> NoReturn:
         """
         Saves an user recovery token
