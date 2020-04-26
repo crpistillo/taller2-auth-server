@@ -33,10 +33,9 @@ class UserRecoveryToken:
         timestamp = datetime.datetime.now().isoformat()
         payload = {
             "user_email": user.get_email(),
-            "timestamp": timestamp,
-            "secret_key": recovery_secret_key
+            "timestamp": timestamp
         }
-        generated_token = jwt.encode(payload, 'secret', algorithm='HS256').decode("utf-8")
+        generated_token = jwt.encode(payload, recovery_secret_key, algorithm='HS256').decode("utf-8")
         return cls(user.get_email(), generated_token, timestamp)
 
     def get_token(self):

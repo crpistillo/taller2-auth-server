@@ -20,3 +20,14 @@ class LoginService:
         :param login_token: the login token string
         :return: the email associated
         """
+
+    @classmethod
+    def factory(cls, name: str, *args, **kwargs) -> 'LoginService':
+        """
+        Factory pattern for login service
+
+        :param name: the name of the login service to create in the factory
+        :return: a login service object
+        """
+        types = {cls.__name__:cls for cls in LoginService.__subclasses__()}
+        return types[name](*args, **kwargs)

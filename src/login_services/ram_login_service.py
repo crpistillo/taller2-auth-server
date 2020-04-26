@@ -1,7 +1,7 @@
 from src.model.user import User
-from .login_service import LoginService
+from src.login_services.login_service import LoginService
 import hashlib
-from .exceptions.invalid_login_token import InvalidLoginToken
+from src.login_services.exceptions.invalid_login_token import InvalidLoginToken
 
 class RamLoginService(LoginService):
 

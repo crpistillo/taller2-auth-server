@@ -35,3 +35,14 @@ class Database:
 
         :param user_token: the user token to save
         """
+
+    @classmethod
+    def factory(cls, name: str, *args, **kwargs) -> 'Database':
+        """
+        Factory pattern for database
+
+        :param name: the name of the database to create in the factory
+        :return: a database object
+        """
+        database_types = {cls.__name__:cls for cls in Database.__subclasses__()}
+        return database_types[name](*args, **kwargs)

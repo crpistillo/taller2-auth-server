@@ -5,3 +5,4 @@ jwt==1.0.0
 sendgrid==6.2.2
 jwt==1.0.0
 Pyrebase==3.0.27
+PyYAML==5.3.1

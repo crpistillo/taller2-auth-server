@@ -1,0 +1,8 @@
+database: RamDatabase
+login_service: RamLoginService
+
+databases:
+  RamDatabase: {}
+
+login_services:
+  RamLoginService: {}

@@ -1,9 +1,9 @@
 from typing import NoReturn, Dict
 from src.model.user import User
 from src.model.user_recovery_token import UserRecoveryToken
-from .database import Database
-from .serialized.serialized_user import SerializedUser
-from .exceptions.user_not_found_error import UserNotFoundError
+from src.database.database import Database
+from src.database.serialized.serialized_user import SerializedUser
+from src.database.exceptions.user_not_found_error import UserNotFoundError
 from src.model.secured_password import SecuredPassword
 import logging
 
