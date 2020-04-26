@@ -7,6 +7,7 @@ from src.database.exceptions.user_not_found_error import UserNotFoundError
 from src.model.secured_password import SecuredPassword
 from src.database.exceptions.invalid_login_token import InvalidLoginToken
 import logging
+import hashlib
 
 class RamDatabase(Database):
     """

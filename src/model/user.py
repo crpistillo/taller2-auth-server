@@ -40,6 +40,9 @@ class User:
     def get_email(self) -> str:
         return self.email
 
+    def get_secured_password_string(self) -> str:
+        self.secured_password.serialize()
+
     def password_match(self, other: 'SecuredPassword') -> bool:
         """
         Responsible for comparing to SecuredPasswords
