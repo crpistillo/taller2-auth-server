@@ -44,7 +44,7 @@ class Controller:
             return self.database.login(user)
         else:
             self.logger.info(messages.WRONG_CREDENTIALS_MESSAGE)
-            return messages.WRONG_CREDENTIALS_MESSAGE
+            return messages.WRONG_CREDENTIALS_MESSAGE, 400
 
     def users_recover_password(self):
         """

@@ -8,7 +8,7 @@ class UserRecoveryToken:
     """
     email: str
     token: str
-    date: str
+    timestamp: str
 
     def __init__(self, email: str, token: str, timestamp: str):
         """
