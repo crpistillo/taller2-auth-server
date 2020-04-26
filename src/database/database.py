@@ -36,6 +36,25 @@ class Database:
         :param user_token: the user token to save
         """
 
+    @abstractmethod
+    def login(self, user: User) -> str:
+        """
+        Logins the user and generates a token valid for future actions
+
+        :param user: the user to login
+        :return: an string token for future authentication
+        """
+
+    @abstractmethod
+    def get_user_by_token(self, login_token: str) -> User:
+        """
+        Gets the corresponding user fot a login token
+            if the login token does not exists it returns a InvalidLoginToken exception
+
+        :param login_token: the login token string
+        :return: the user associated
+        """
+
     @classmethod
     def factory(cls, name: str, *args, **kwargs) -> 'Database':
         """

@@ -5,6 +5,7 @@ from src.database.database import Database
 from src.database.serialized.serialized_user import SerializedUser
 from src.database.exceptions.user_not_found_error import UserNotFoundError
 from src.model.secured_password import SecuredPassword
+from src.database.exceptions.invalid_login_token import InvalidLoginToken
 import logging
 
 class RamDatabase(Database):
@@ -16,6 +17,7 @@ class RamDatabase(Database):
     def __init__(self):
         self.serialized_users = {}
         self.user_recovery_tokens = {}
+        self.tokens = {}
 
     def save_user(self, user: User) -> NoReturn:
         """
@@ -46,6 +48,29 @@ class RamDatabase(Database):
         return User(email=serialized_user.email, fullname=serialized_user.fullname,
                     phone_number=serialized_user.phone_number, photo=serialized_user.photo,
                     secured_password=secured_password)
+
+    def login(self, user: User) -> str:
+        """
+        Logins the user and generates a token valid for future actions
+
+        :param user: the user to login
+        :return: an string token for future authentication
+        """
+        token = hashlib.sha256(user.get_email().encode("utf-8")).hexdigest()
+        self.tokens[token] = user.get_email()
+        return token
+
+    def get_email_by_token(self, login_token: str) -> str:
+        """
+        Gets the corresponding email fot a login token
+            if the login token does not exists it returns a InvalidLoginToken exception
+
+        :param login_token: the login token string
+        :return: the email associated
+        """
+        if login_token not in self.tokens:
+            raise InvalidLoginToken
+        return self.tokens[login_token]
 
     def save_recovery_token(self, user_token: UserRecoveryToken) -> NoReturn:
         """

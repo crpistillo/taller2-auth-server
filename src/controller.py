@@ -12,7 +12,6 @@ from src.database.serialized.serialized_user import SerializedUser
 from flask import request
 from src.model.user_recovery_token import UserRecoveryToken
 from .services.email import EmailService
-from src.login_services.login_service import LoginService
 
 
 RECOVERY_TOKEN_SECRET = "dummy"
@@ -20,12 +19,11 @@ RECOVERY_TOKEN_SECRET = "dummy"
 
 class Controller:
     logger = logging.getLogger(__name__)
-    def __init__(self, database: Database, login_service: LoginService):
+    def __init__(self, database: Database):
         """
         Here the init should receive all the parameters needed to know how to answer all the queries
         """
         self.database = database
-        self.login_service = login_service
         return
 
     def users_login(self):
@@ -43,7 +41,7 @@ class Controller:
         secured_password = SecuredPassword.from_raw_password(content["password"])
         if user.password_match(secured_password):
             self.logger.debug(messages.GENERATING_LOGIN_TOKEN_MESSAGE % content["email"])
-            return self.login_service.login(user)
+            return self.database.login(user)
         else:
             self.logger.info(messages.WRONG_CREDENTIALS_MESSAGE)
             return messages.WRONG_CREDENTIALS_MESSAGE
