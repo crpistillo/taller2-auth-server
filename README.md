@@ -48,7 +48,7 @@ python __main__.py
 Para correr la app con gunicorn:
 
 ```
-gunicorn -k sync --workers 3 --bind 0.0.0.0:8080 'create_application:create_application()'
+gunicorn -k sync --workers 3 --bind 0.0.0.0:8080 'create_application:create_application("config/deploy_conf.yml")'
 ```
 
 * `-k` es para indicar el tipo de workers, queremos sync porque andan mejor que el default
@@ -56,6 +56,12 @@ gunicorn -k sync --workers 3 --bind 0.0.0.0:8080 'create_application:create_appl
 y deberia usarse flask para debuggear me parece prudente dejarlo en 3 que seria similar a prod
 * `--bind` le indica a que host y puerto mapearlo
 * `create_application:create_application` es la ruta a donde importar la app de flask
+
+Para levantar las env variables de prod (si se tiene el prod.env):
+
+```
+set -o allexport; source prod.env; set +o allexport
+```
 
 ## Deploy de la app a Heroku
 
@@ -77,4 +83,46 @@ Finalmente para ver los logs:
 
 ```
 heroku logs
+```
+
+## Postgres database
+
+Script para el set-up de la base de datos:
+
+```sql
+create schema chotuve;
+
+
+create table chotuve.users
+(
+	email varchar,
+	fullname varchar,
+	phone_number varchar,
+	photo bytea,
+	password varchar
+);
+
+create unique index users_email_uindex
+	on chotuve.users (email);
+
+alter table chotuve.users
+	add constraint users_pk
+		primary key (email);
+
+
+create table chotuve.user_recovery_token
+(
+	email varchar,
+	token varchar,
+	timestamp timestamp,
+	constraint email
+		foreign key (email) references chotuve.users
+);
+
+create unique index user_recovery_token_email_uindex
+	on chotuve.user_recovery_token (email);
+
+alter table chotuve.user_recovery_token
+	add constraint user_recovery_token_pk
+		primary key (email);
 ```

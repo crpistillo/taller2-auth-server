@@ -1,0 +1,2 @@
+class InvalidLoginToken(AttributeError):
+    pass

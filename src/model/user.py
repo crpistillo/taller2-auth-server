@@ -1,4 +1,3 @@
-from io import BytesIO
 from .secured_password import SecuredPassword
 from .exceptions.invalid_phone_number_error import InvalidPhoneNumberError
 from .exceptions.invalid_email_error import InvalidEmailError
@@ -28,7 +27,6 @@ class User:
         :param photo: the photo as bytes
         :param secured_password: a SecuredPassword object
         """
-        # TODO: validations
         if not re.fullmatch(PHONE_NUMBER_REGEX, phone_number, re.IGNORECASE):
             raise InvalidPhoneNumberError
         if not re.fullmatch(EMAIL_REGEX, email, re.IGNORECASE):
@@ -38,3 +36,19 @@ class User:
         self.phone_number = phone_number
         self.photo = photo
         self.secured_password = secured_password
+
+    def get_email(self) -> str:
+        return self.email
+
+    def get_secured_password_string(self) -> str:
+        return self.secured_password.serialize()
+
+    def password_match(self, other: 'SecuredPassword') -> bool:
+        """
+        Responsible for comparing to SecuredPasswords
+
+        :param other: other secured password
+        :return: a boolean indicating if the password are equal
+        """
+        return other.__eq__(self.secured_password)
+

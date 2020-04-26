@@ -8,7 +8,7 @@ class TestUserRegistration(unittest.TestCase):
 
     def test_querying_for_non_existing_user_error(self):
         with self.app.test_client() as c:
-            response = c.post('/users/query/phone_number', data='{"email":"giancafferata@hotmail.com"}',
+            response = c.post('/users/profile_query', data='{"email":"giancafferata@hotmail.com"}',
                               headers={"Content-Type": "application/json"})
             self.assertEqual(response.status_code, 400)
 
@@ -51,10 +51,11 @@ class TestUserRegistration(unittest.TestCase):
                                                       '"phone_number":"11 1111-1111", "photo":"", "password":"asd123"}',
                               headers={"Content-Type": "application/json"})
             self.assertEqual(response.status_code, 200)
-            response = c.post('/users/query/phone_number', data='{"email":"giancafferata@hotmail.com"}',
+            response = c.post('/users/profile_query', data='{"email":"giancafferata@hotmail.com"}',
                               headers={"Content-Type": "application/json"})
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.data.decode(), "11 1111-1111")
+            self.assertEqual(response.data.decode(), '{"email": "giancafferata@hotmail.com", "fullname": "Gianmarco Cafferata", '
+                                                     '"photo": ""}')
 
     def test_query_for_inexistent_user(self):
         # TODO: Query for all fields
@@ -63,6 +64,6 @@ class TestUserRegistration(unittest.TestCase):
                                                       '"phone_number":"11 1111-1111", "photo":"", "password":"asd123"}',
                               headers={"Content-Type": "application/json"})
             self.assertEqual(response.status_code, 200)
-            response = c.post('/users/query/phone_number', data='{"email":"jian01.cs@hotmail.com"}',
+            response = c.post('/users/profile_query', data='{"email":"jian01.cs@hotmail.com"}',
                               headers={"Content-Type": "application/json"})
             self.assertEqual(response.status_code, 400)
