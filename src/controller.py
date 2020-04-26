@@ -100,9 +100,9 @@ class Controller:
             return messages.USER_NOT_FOUND_MESSAGE % content["email"], 400
 
         serialized_user_dic = SerializedUser.from_user(user)._asdict()
-        remove_keys = ["password", "phone_number"]
-        [serialized_user_dic.pop(key) for key in remove_keys]
-        return json.dumps(serialized_user_dic)
+        #TODO: retrieve real photo
+        serialized_user_dic["photo"] = str(serialized_user_dic["photo"])
+        return json.dumps({k:v for k,v in serialized_user_dic.items() if k!="password"})
 
     def api_health(self):
         """

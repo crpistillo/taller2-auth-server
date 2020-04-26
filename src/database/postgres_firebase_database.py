@@ -7,6 +7,7 @@ from src.database.exceptions.user_not_found_error import UserNotFoundError
 from src.model.secured_password import SecuredPassword
 import psycopg2
 import firebase_admin
+from firebase_admin import auth
 from firebase_admin import credentials
 from firebase_admin.exceptions import NotFoundError
 import logging
@@ -18,12 +19,12 @@ FIREBASE_LOGIN_API_URL = "https://identitytoolkit.googleapis.com/v1/accounts:sig
 
 USER_INSERT_QUERY = """
 INSERT INTO %s (email, fullname, phone_number, photo, password)
-VALUES (%s, %s, %s, %s, %s)
+VALUES ('%s', '%s', '%s', '%s', '%s')
 """
 
 SEARCH_USER_QUERY = """SELECT email, fullname, phone_number, photo, password
 FROM %s
-WHERE email=%s
+WHERE email='%s'
 """
 
 
@@ -66,15 +67,16 @@ class PostgresFirebaseDatabase(Database):
         cursor = self.conn.cursor()
         serialized_user = SerializedUser.from_user(user)
         try:
-            firebase_uid = firebase_admin.auth.get_user_by_email("giancafferata@hotmail.com").uid
-            firebase_admin.auth.update_user(firebase_uid, **{"password": serialized_user.password})
+            firebase_uid = auth.get_user_by_email("giancafferata@hotmail.com").uid
+            auth.update_user(firebase_uid, **{"password": serialized_user.password})
         except NotFoundError:
-            firebase_admin.auth.create_user(**{"email": serialized_user.email,
+            auth.create_user(**{"email": serialized_user.email,
                                                "password": serialized_user.password})
 
         query = USER_INSERT_QUERY % (self.users_table_name, serialized_user.email, serialized_user.fullname,
                                      serialized_user.phone_number, serialized_user.photo, serialized_user.password)
         cursor.execute(query)
+        self.conn.commit()
         cursor.close()
 
 
@@ -90,7 +92,10 @@ class PostgresFirebaseDatabase(Database):
         cursor = self.conn.cursor()
         cursor.execute(SEARCH_USER_QUERY % (self.users_table_name, email))
         result = cursor.fetchone()
+        if not result:
+            raise UserNotFoundError
         secured_password = SecuredPassword(result[4])
+        cursor.close()
         return User(email=result[0], fullname=result[1],
                     phone_number=result[2], photo=result[3],
                     secured_password=secured_password)
@@ -112,6 +117,7 @@ class PostgresFirebaseDatabase(Database):
         r = requests.post(FIREBASE_LOGIN_API_URL,
                           params={"key": self.firebase_api_key},
                           data=payload)
+        r.raise_for_status()
 
         return r.json()["idToken"]
 
@@ -133,7 +139,7 @@ class PostgresFirebaseDatabase(Database):
         :param login_token: the login token string
         :return: the user associated
         """
-        user_email = firebase_admin.auth.verify_id_token(login_token)["email"]
+        user_email = auth.verify_id_token(login_token)["email"]
         return self.search_user(user_email)
 
     def save_recovery_token(self, user_token: UserRecoveryToken) -> NoReturn:
