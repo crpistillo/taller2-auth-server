@@ -2,6 +2,7 @@ from flask import Flask
 from src.controller import Controller
 from logging.config import fileConfig
 from src.database.ram_database import RamDatabase
+from src.login_services.ram_login_service import RamLoginService
 from functools import partial
 
 
@@ -9,7 +10,7 @@ fileConfig('config/logging_conf.ini')
 
 
 def create_application():
-    controller = Controller(database=RamDatabase())
+    controller = Controller(database=RamDatabase(), login_service=RamLoginService())
     return create_application_with_controller(controller)
 
 def create_application_with_controller(controller: Controller):
@@ -25,6 +26,4 @@ def create_application_with_controller(controller: Controller):
                      methods=["POST"])
     app.add_url_rule('/users/profile_query', 'users_profile_query',
                      controller.users_profile_query, methods=['POST'])
-    app.add_url_rule('/users/profile_update', 'users_profile_update',
-                     controller.users_profile_update, methods=['POST'])
     return app

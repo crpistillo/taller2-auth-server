@@ -15,6 +15,7 @@ class RamDatabase(Database):
     logger = logging.getLogger(__name__)
     def __init__(self):
         self.serialized_users = {}
+        self.user_recovery_tokens = {}
 
     def save_user(self, user: User) -> NoReturn:
         """
@@ -46,7 +47,7 @@ class RamDatabase(Database):
                     phone_number=serialized_user.phone_number, photo=serialized_user.photo,
                     secured_password=secured_password)
 
-    def save_user_token(self, user_token: UserRecoveryToken) -> NoReturn:
+    def save_recovery_token(self, user_token: UserRecoveryToken) -> NoReturn:
         """
         Saves an user recovery token
 

@@ -29,7 +29,7 @@ class Database:
         """
 
     @abstractmethod
-    def save_user_token(self, user_token: UserRecoveryToken) -> NoReturn:
+    def save_recovery_token(self, user_token: UserRecoveryToken) -> NoReturn:
         """
         Saves an user recovery token
 

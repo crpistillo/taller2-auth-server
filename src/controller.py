@@ -12,15 +12,20 @@ from src.database.serialized.serialized_user import SerializedUser
 from flask import request
 from src.model.user_recovery_token import UserRecoveryToken
 from .services.email import EmailService
+from src.login_services.login_service import LoginService
+
+
+RECOVERY_TOKEN_SECRET = "dummy"
 
 
 class Controller:
     logger = logging.getLogger(__name__)
-    def __init__(self, database: Database):
+    def __init__(self, database: Database, login_service: LoginService):
         """
         Here the init should receive all the parameters needed to know how to answer all the queries
         """
         self.database = database
+        self.login_service = login_service
         return
 
     def users_login(self):
@@ -38,10 +43,7 @@ class Controller:
         secured_password = SecuredPassword.from_raw_password(content["password"])
         if user.password_match(secured_password):
             self.logger.debug(messages.GENERATING_LOGIN_TOKEN_MESSAGE % content["email"])
-            # TODO: change this
-            user_token = UserRecoveryToken.generate_token(content["email"], "login")
-            self.database.save_user_token(user_token)
-            return user_token.get_token()
+            return self.login_service.login(user)
         else:
             self.logger.info(messages.WRONG_CREDENTIALS_MESSAGE)
             return messages.WRONG_CREDENTIALS_MESSAGE
@@ -59,8 +61,8 @@ class Controller:
             self.logger.debug(messages.USER_NOT_FOUND_MESSAGE % content["email"])
             return messages.USER_NOT_FOUND_MESSAGE % content["email"], 400
         self.logger.debug(messages.GENERATING_RECOVERY_TOKEN_MESSAGE % content["email"])
-        user_token = UserRecoveryToken.from_user(user, "recovery")
-        self.database.save_user_token(user_token)
+        user_token = UserRecoveryToken.from_user(user, RECOVERY_TOKEN_SECRET)
+        self.database.save_recovery_token(user_token)
         return EmailService.send_recovery_email(user, user_token)
 
         #falta fijarse si ya se creo un token de password-recovery para este usuario
