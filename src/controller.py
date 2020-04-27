@@ -3,6 +3,7 @@ import logging
 
 from .constants import messages
 from .database.database import Database
+from .database.exceptions.user_recovery_token_not_found_error import UserRecoveryTokenNotFoundError
 from .model.secured_password import SecuredPassword
 from .model.user import User
 from src.database.exceptions.user_not_found_error import UserNotFoundError
@@ -49,7 +50,7 @@ class Controller:
     def users_recover_password(self):
         """
         Handles the user recovering
-        :return: a token for the user to generate a new password
+        :return: /a token for the user to generate a new password
         """
         assert request.is_json
         content = request.get_json()
@@ -60,10 +61,38 @@ class Controller:
             return messages.USER_NOT_FOUND_MESSAGE % content["email"], 400
         self.logger.debug(messages.GENERATING_RECOVERY_TOKEN_MESSAGE % content["email"])
         user_token = UserRecoveryToken.from_user(user, RECOVERY_TOKEN_SECRET)
-        self.database.save_recovery_token(user_token)
+        self.database.save_user_recovery_token(user_token)
+        #return user_token.get_token()
         return EmailService.send_recovery_email(user, user_token)
+        #TODO: fijarse si ya se creo un token de password-recovery para este usuario
 
-        #falta fijarse si ya se creo un token de password-recovery para este usuario
+    def users_new_password(self):
+        """
+        Handles the new password setting
+        """
+        assert request.is_json
+        content = request.get_json()
+        try:
+            user = self.database.search_user(content["email"])
+        except UserNotFoundError:
+            self.logger.debug(messages.USER_NOT_FOUND_MESSAGE % content["email"])
+            return messages.USER_NOT_FOUND_MESSAGE % content["email"], 400
+        try:
+            user_recovery_token = self.database.search_user_recovery_token(content["email"])
+        except UserRecoveryTokenNotFoundError:
+            self.logger.debug(messages.USER_RECOVERY_TOKEN_NOT_FOUND_MESSAGE % content["email"])
+            return messages.USER_RECOVERY_TOKEN_NOT_FOUND_MESSAGE % content["email"], 400
+        #TODO: implementar update
+        if user_recovery_token.token_match(content["token"]):
+            self.database.updatePassword(user, content["new_password"])
+            self.logger.debug(messages.NEW_PASSWORD_SUCCESS_MESSAGE % content["email"])
+            return messages.NEW_PASSWORD_SUCCESS_MESSAGE % content["email"], 200
+        else:
+            self.logger.info(messages.INVALID_TOKEN_MESSAGE % content["email"])
+            return messages.INVALID_TOKEN_MESSAGE % content["email"], 400
+
+
+
 
     def users_register(self):
         """
@@ -100,9 +129,11 @@ class Controller:
             return messages.USER_NOT_FOUND_MESSAGE % content["email"], 400
 
         serialized_user_dic = SerializedUser.from_user(user)._asdict()
+        """
         #TODO: retrieve real photo
         serialized_user_dic["photo"] = ""
-        return json.dumps({k:v for k,v in serialized_user_dic.items() if k!="password"})
+        return json.dumps({k:v for k,v in serialized_user_dic.items() if k!="password"})"""
+        return json.dumps(serialized_user_dic)
 
     def api_health(self):
         """

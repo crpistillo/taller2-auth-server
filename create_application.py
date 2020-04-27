@@ -30,8 +30,8 @@ def create_application_with_controller(controller: Controller):
                      methods=["POST"])
     app.add_url_rule('/users/recover_password', 'users_recover_password',
                      controller.users_recover_password, methods=["POST"])
-    app.add_url_rule('/users/new_password', 'users_recover_password',
-                     controller.users_recover_password, methods=["POST"])
+    app.add_url_rule('/users/new_password', 'users_new_password',
+                     controller.users_new_password, methods=["POST"])
     app.add_url_rule('/users/register', 'users_register', controller.users_register,
                      methods=["POST"])
     app.add_url_rule('/users/profile_query', 'users_profile_query',

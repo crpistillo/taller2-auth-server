@@ -44,4 +44,13 @@ class UserRecoveryToken:
     def get_email(self):
         return self.email
 
+    def token_match(self, other: str) -> bool:
+        """
+        Responsible for comparing to token
+
+        :param other: other token
+        :return: a boolean indicating if the tokens are equal
+        """
+        return other.__eq__(self.token)
+
 

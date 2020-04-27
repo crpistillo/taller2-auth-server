@@ -1,0 +1,2 @@
+class UserRecoveryTokenNotFoundError(KeyError):
+    pass

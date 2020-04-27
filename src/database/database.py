@@ -29,11 +29,22 @@ class Database:
         """
 
     @abstractmethod
-    def save_recovery_token(self, user_token: UserRecoveryToken) -> NoReturn:
+    def save_user_recovery_token(self, user_recovery_token: UserRecoveryToken) -> NoReturn:
         """
         Saves an user recovery token
 
         :param user_token: the user token to save
+        """
+
+    @abstractmethod
+    def search_user_recovery_token(self, email: str) -> UserRecoveryToken:
+        """
+        Searches an user_recovery_token by its email
+            if the user_recovery_token exists it returns a UserRecoveryToken
+            if the user does not exist it raises a UserNotFoundError
+
+        :param email: the email to search the user
+        :return: an UserRecoveryToken object
         """
 
     @abstractmethod
@@ -43,6 +54,15 @@ class Database:
 
         :param user: the user to login
         :return: an string token for future authentication
+        """
+
+    @abstractmethod
+    def updatePassword(self, user: User, new_password: str) -> NoReturn:
+        """
+        Updates the password from the user
+
+        :param user: the user to update
+        :param new_password: the new password
         """
 
     @abstractmethod

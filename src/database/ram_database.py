@@ -4,6 +4,7 @@ from src.model.user import User
 from src.model.user_recovery_token import UserRecoveryToken
 from src.database.database import Database
 from src.database.serialized.serialized_user import SerializedUser
+from src.database.serialized.serialized_user_recovery_token import SerializedUserRecoveryToken
 from src.database.exceptions.user_not_found_error import UserNotFoundError
 from src.model.secured_password import SecuredPassword
 from src.database.exceptions.invalid_login_token import InvalidLoginToken
@@ -15,10 +16,11 @@ class RamDatabase(Database):
     Ram implementation of Database abstraction
     """
     serialized_users: Dict[str, SerializedUser]
+    serialized_user_recovery_tokens: Dict[str, SerializedUserRecoveryToken]
     logger = logging.getLogger(__name__)
     def __init__(self):
         self.serialized_users = {}
-        self.user_recovery_tokens = {}
+        self.serialized_user_recovery_tokens = {}
         self.tokens = {}
 
     def save_user(self, user: User) -> NoReturn:
@@ -70,13 +72,43 @@ class RamDatabase(Database):
         :param login_token: the login token string
         :return: the user associated
         """
-        if login_token not in self.tokens:
+        if login_ not in self.tokens:
             raise InvalidLoginToken
         return self.search_user(self.tokens[login_token])
 
-    def save_recovery_token(self, user_token: UserRecoveryToken) -> NoReturn:
+    def save_user_recovery_token(self, user_recovery_token: UserRecoveryToken) -> NoReturn:
         """
         Saves an user recovery token
 
         :param user_token: the user token to save
         """
+        serialized_user_recovery_token = SerializedUserRecoveryToken.from_user_recovery_token(user_recovery_token)
+        self.logger.debug("Saving user recovery token with email %s" % serialized_user_recovery_token.email)
+        self.serialized_user_recovery_tokens[serialized_user_recovery_token.email] = serialized_user_recovery_token
+
+    def search_user_recovery_token(self, email: str) -> UserRecoveryToken:
+        """
+        Searches an user_recovery_token by its email
+            if the user_recovery_token exists it returns a UserRecoveryToken
+            if the user does not exist it raises a UserNotFoundError
+
+        :param email: the email to search the user
+        :return: an UserRecoveryToken object
+        """
+
+        if email not in self.serialized_user_recovery_tokens:
+            raise UserNotFoundError
+        self.logger.debug("Loading user_recovery_token with email %s" % email)
+        serialized_user_recovery_token = self.serialized_user_recovery_tokens[email]
+        return UserRecoveryToken(email=serialized_user_recovery_token.email, token=serialized_user_recovery_token.token,
+                    timestamp=serialized_user_recovery_token.timestamp)
+
+    def updatePassword(self, user: User, new_password: str) -> NoReturn:
+        """
+        Updates the password from the user
+
+        :param user: the user to update
+        :param new_password: the new password
+        """
+        pass
+

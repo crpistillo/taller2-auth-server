@@ -16,3 +16,4 @@ class SerializedUser(NamedTuple):
         return SerializedUser(email=user.email,fullname=user.fullname,
                               phone_number=user.phone_number, photo=user.photo,
                               password=user.secured_password.serialize())
+
