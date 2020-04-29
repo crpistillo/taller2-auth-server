@@ -1,6 +1,5 @@
 import json
 import logging
-
 from .constants import messages
 from .database.database import Database
 from .database.exceptions.user_recovery_token_not_found_error import UserRecoveryTokenNotFoundError
@@ -38,14 +37,14 @@ class Controller:
             user = self.database.search_user(content["email"])
         except UserNotFoundError:
             self.logger.debug(messages.USER_NOT_FOUND_MESSAGE % content["email"])
-            return messages.USER_NOT_FOUND_MESSAGE % content["email"], 400
+            return messages.ERROR_JSON % (messages.USER_NOT_FOUND_MESSAGE % content["email"]), 400
         secured_password = SecuredPassword.from_raw_password(content["password"])
         if user.password_match(secured_password):
             self.logger.debug(messages.GENERATING_LOGIN_TOKEN_MESSAGE % content["email"])
             return self.database.login(user)
         else:
             self.logger.info(messages.WRONG_CREDENTIALS_MESSAGE)
-            return messages.WRONG_CREDENTIALS_MESSAGE, 400
+            return messages.ERROR_JSON % messages.WRONG_CREDENTIALS_MESSAGE, 400
 
     def users_recover_password(self):
         """
@@ -58,7 +57,7 @@ class Controller:
             user = self.database.search_user(content["email"])
         except UserNotFoundError:
             self.logger.debug(messages.USER_NOT_FOUND_MESSAGE % content["email"])
-            return messages.USER_NOT_FOUND_MESSAGE % content["email"], 400
+            return messages.ERROR_JSON % (messages.USER_NOT_FOUND_MESSAGE % content["email"]), 400
         self.logger.debug(messages.GENERATING_RECOVERY_TOKEN_MESSAGE % content["email"])
         user_token = UserRecoveryToken.from_user(user, RECOVERY_TOKEN_SECRET)
         self.database.save_user_recovery_token(user_token)
@@ -76,20 +75,20 @@ class Controller:
             user = self.database.search_user(content["email"])
         except UserNotFoundError:
             self.logger.debug(messages.USER_NOT_FOUND_MESSAGE % content["email"])
-            return messages.USER_NOT_FOUND_MESSAGE % content["email"], 400
+            return messages.ERROR_JSON % (messages.USER_NOT_FOUND_MESSAGE % content["email"]), 400
         try:
             user_recovery_token = self.database.search_user_recovery_token(content["email"])
         except UserRecoveryTokenNotFoundError:
             self.logger.debug(messages.USER_RECOVERY_TOKEN_NOT_FOUND_MESSAGE % content["email"])
-            return messages.USER_RECOVERY_TOKEN_NOT_FOUND_MESSAGE % content["email"], 400
+            return messages.ERROR_JSON % (messages.USER_RECOVERY_TOKEN_NOT_FOUND_MESSAGE % content["email"]), 400
         #TODO: implementar update
         if user_recovery_token.token_match(content["token"]):
             self.database.update_password(user, content["new_password"])
             self.logger.debug(messages.NEW_PASSWORD_SUCCESS_MESSAGE % content["email"])
-            return messages.NEW_PASSWORD_SUCCESS_MESSAGE % content["email"], 200
+            return messages.ERROR_JSON % (messages.NEW_PASSWORD_SUCCESS_MESSAGE % content["email"]), 200
         else:
             self.logger.info(messages.INVALID_TOKEN_MESSAGE % content["email"])
-            return messages.INVALID_TOKEN_MESSAGE % content["email"], 400
+            return messages.ERROR_JSON % (messages.INVALID_TOKEN_MESSAGE % content["email"]), 400
 
     def users_register(self):
         """
@@ -99,7 +98,7 @@ class Controller:
         content = request.get_json()
         try:
             self.database.search_user(content["email"])
-            return messages.USER_ALREADY_REGISTERED_MESSAGE % content["email"], 400
+            return messages.ERROR_JSON % (messages.USER_ALREADY_REGISTERED_MESSAGE % content["email"]), 400
         except UserNotFoundError:
             pass
         secured_password = SecuredPassword.from_raw_password(content["password"])
@@ -109,12 +108,13 @@ class Controller:
                         secured_password=secured_password)
         except InvalidEmailError:
             self.logger.debug(messages.USER_INVALID_EMAIL_ERROR_MESSAGE % content["email"])
-            return messages.USER_INVALID_EMAIL_ERROR_MESSAGE % content["email"], 400
+            return messages.ERROR_JSON % (messages.USER_INVALID_EMAIL_ERROR_MESSAGE % content["email"]), 400
         except InvalidPhoneNumberError:
             self.logger.debug(messages.USER_INVALID_PHONE_ERROR_MESSAGE % (content["phone_number"], content["email"]))
-            return messages.USER_INVALID_PHONE_ERROR_MESSAGE % (content["phone_number"], content["email"]), 400
+            return messages.ERROR_JSON % (messages.USER_INVALID_PHONE_ERROR_MESSAGE %
+                                 (content["phone_number"], content["email"])), 400
         self.database.save_user(user)
-        return "OK"
+        return messages.SUCCESS_JSON
 
     def users_profile_query(self):
         email_query = request.args.get('email')
@@ -122,7 +122,7 @@ class Controller:
             user = self.database.search_user(email_query)
         except UserNotFoundError:
             self.logger.debug(messages.USER_NOT_FOUND_MESSAGE % email_query)
-            return messages.USER_NOT_FOUND_MESSAGE % email_query, 400
+            return messages.ERROR_JSON % (messages.USER_NOT_FOUND_MESSAGE % email_query), 400
 
         serialized_user_dic = SerializedUser.from_user(user)._asdict()
         """
