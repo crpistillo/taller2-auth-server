@@ -138,4 +138,4 @@ class Controller:
         :return: a tuple with the text and the status to return
         """
         self.logger.debug("Api health asked")
-        return "Everything ok", 200
+        return messages.SUCCESS_JSON, 200

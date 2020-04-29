@@ -10,11 +10,3 @@ class TestFlaskDummy(unittest.TestCase):
         with self.app.test_client() as c:
             response = c.get('/health')
             self.assertEqual(response.status_code, 200)
-
-    def test_get_not_allowed(self):
-        # TODO: fill with all endpoints that are just POST
-        with self.app.test_client() as c:
-            response = c.get('/users/profile_query')
-            self.assertEqual(response.status_code, 405)
-            response = c.get('/users/register')
-            self.assertEqual(response.status_code, 405)

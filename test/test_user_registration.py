@@ -9,8 +9,7 @@ class TestUserRegistration(unittest.TestCase):
 
     def test_querying_for_non_existing_user_error(self):
         with self.app.test_client() as c:
-            response = c.post('/users/profile_query', data='{"email":"giancafferata@hotmail.com"}',
-                              headers={"Content-Type": "application/json"})
+            response = c.get('/users/profile_query', query_string={"email": "giancafferata@hotmail.com"})
             self.assertEqual(response.status_code, 400)
 
     def test_simple_register(self):
@@ -52,8 +51,7 @@ class TestUserRegistration(unittest.TestCase):
                                                       '"phone_number":"11 1111-1111", "photo":"", "password":"asd123"}',
                               headers={"Content-Type": "application/json"})
             self.assertEqual(response.status_code, 200)
-            response = c.post('/users/profile_query', data='{"email":"giancafferata@hotmail.com"}',
-                              headers={"Content-Type": "application/json"})
+            response = c.get('/users/profile_query', query_string={"email": "giancafferata@hotmail.com"})
             self.assertEqual(response.status_code, 200)
             response_json = json.loads(response.data)
             self.assertEqual(response_json["email"], "giancafferata@hotmail.com")
@@ -67,6 +65,5 @@ class TestUserRegistration(unittest.TestCase):
                                                       '"phone_number":"11 1111-1111", "photo":"", "password":"asd123"}',
                               headers={"Content-Type": "application/json"})
             self.assertEqual(response.status_code, 200)
-            response = c.post('/users/profile_query', data='{"email":"jian01.cs@hotmail.com"}',
-                              headers={"Content-Type": "application/json"})
+            response = c.get('/users/profile_query', query_string={"email": "jian01.cs@gmail.com"})
             self.assertEqual(response.status_code, 400)
