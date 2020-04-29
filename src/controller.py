@@ -41,7 +41,7 @@ class Controller:
         secured_password = SecuredPassword.from_raw_password(content["password"])
         if user.password_match(secured_password):
             self.logger.debug(messages.GENERATING_LOGIN_TOKEN_MESSAGE % content["email"])
-            return self.database.login(user)
+            return json.dumps({"login_token": self.database.login(user)})
         else:
             self.logger.info(messages.WRONG_CREDENTIALS_MESSAGE)
             return messages.ERROR_JSON % messages.WRONG_CREDENTIALS_MESSAGE, 400
