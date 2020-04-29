@@ -84,15 +84,12 @@ class Controller:
             return messages.USER_RECOVERY_TOKEN_NOT_FOUND_MESSAGE % content["email"], 400
         #TODO: implementar update
         if user_recovery_token.token_match(content["token"]):
-            self.database.updatePassword(user, content["new_password"])
+            self.database.update_password(user, content["new_password"])
             self.logger.debug(messages.NEW_PASSWORD_SUCCESS_MESSAGE % content["email"])
             return messages.NEW_PASSWORD_SUCCESS_MESSAGE % content["email"], 200
         else:
             self.logger.info(messages.INVALID_TOKEN_MESSAGE % content["email"])
             return messages.INVALID_TOKEN_MESSAGE % content["email"], 400
-
-
-
 
     def users_register(self):
         """
@@ -120,13 +117,12 @@ class Controller:
         return "OK"
 
     def users_profile_query(self):
-        assert request.is_json
-        content = request.get_json()
+        email_query = request.args.get('email')
         try:
-            user = self.database.search_user(content["email"])
+            user = self.database.search_user(email_query)
         except UserNotFoundError:
-            self.logger.debug(messages.USER_NOT_FOUND_MESSAGE % content["email"])
-            return messages.USER_NOT_FOUND_MESSAGE % content["email"], 400
+            self.logger.debug(messages.USER_NOT_FOUND_MESSAGE % email_query)
+            return messages.USER_NOT_FOUND_MESSAGE % email_query, 400
 
         serialized_user_dic = SerializedUser.from_user(user)._asdict()
         """

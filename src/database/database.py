@@ -57,7 +57,7 @@ class Database:
         """
 
     @abstractmethod
-    def updatePassword(self, user: User, new_password: str) -> NoReturn:
+    def update_password(self, user: User, new_password: str) -> NoReturn:
         """
         Updates the password from the user
 

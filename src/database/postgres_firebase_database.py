@@ -33,6 +33,7 @@ class PostgresFirebaseDatabase(Database):
     Postgres & Firebase implementation of Database abstraction
     """
     logger = logging.getLogger(__name__)
+    # TODO: avoid sql injection
     def __init__(self, users_table_name: str, recovery_token_table_name: str, postgr_host_env_name: str,
                  postgr_user_env_name: str, postgr_pass_env_name: str, postgr_database_env_name: str,
                  firebase_json_env_name: str, firebase_api_key_env_name: str):

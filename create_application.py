@@ -35,5 +35,5 @@ def create_application_with_controller(controller: Controller):
     app.add_url_rule('/users/register', 'users_register', controller.users_register,
                      methods=["POST"])
     app.add_url_rule('/users/profile_query', 'users_profile_query',
-                     controller.users_profile_query, methods=['POST'])
+                     controller.users_profile_query, methods=['GET'])
     return app

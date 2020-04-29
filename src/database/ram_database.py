@@ -72,7 +72,7 @@ class RamDatabase(Database):
         :param login_token: the login token string
         :return: the user associated
         """
-        if login_ not in self.tokens:
+        if login_token not in self.tokens:
             raise InvalidLoginToken
         return self.search_user(self.tokens[login_token])
 
@@ -103,7 +103,7 @@ class RamDatabase(Database):
         return UserRecoveryToken(email=serialized_user_recovery_token.email, token=serialized_user_recovery_token.token,
                     timestamp=serialized_user_recovery_token.timestamp)
 
-    def updatePassword(self, user: User, new_password: str) -> NoReturn:
+    def update_password(self, user: User, new_password: str) -> NoReturn:
         """
         Updates the password from the user
 
