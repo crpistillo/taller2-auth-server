@@ -1,1 +1,1 @@
-web: gunicorn -k sync 'create_application:create_application("config/deploy_conf.yml")'
+web: gunicorn -k sync 'create_application:create_application("config/deploy_conf.yml")' --log-config config/logging_conf.ini

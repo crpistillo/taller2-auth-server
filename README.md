@@ -52,7 +52,7 @@ python __main__.py
 Para correr la app con gunicorn:
 
 ```
-gunicorn -k sync --workers 3 --bind 0.0.0.0:8080 'create_application:create_application("config/deploy_conf.yml")'
+gunicorn -k sync --workers 3 --bind 0.0.0.0:8080 'create_application:create_application("config/deploy_conf.yml")' --log-config config/logging_conf.ini
 ```
 
 * `-k` es para indicar el tipo de workers, queremos sync porque andan mejor que el default
