@@ -9,3 +9,4 @@ psycopg2-binary==2.8.5
 firebase-admin==4.1.0
 requests==2.23.0
 flask-swagger-ui==3.25.0
+flask-cors==3.0.8

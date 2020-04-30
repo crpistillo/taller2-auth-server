@@ -4,6 +4,7 @@ from logging.config import fileConfig
 from config.load_config import load_config
 from typing import Optional
 from flask_swagger_ui import get_swaggerui_blueprint
+from flask_cors import CORS
 
 
 fileConfig('config/logging_conf.ini')
@@ -37,6 +38,12 @@ def create_application_with_controller(controller: Controller):
                                                   config= {"app_name": "Chotuve Auth Server"})
 
     app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
+
+    cors = CORS(app, resources={"/user": {"origins": "*"},
+                                "/user/recover_password": {"origins": "*"},
+                                "/user/new_password": {"origins": "*"},
+                                "/user/login": {"origins": "*"},
+                                "/health": {"origins": "*"}})
 
     app.add_url_rule('/health', 'api_health', controller.api_health)
     app.add_url_rule('/user/login', 'users_login', controller.users_login,
