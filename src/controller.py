@@ -15,29 +15,38 @@ from .services.email import EmailService
 
 
 RECOVERY_TOKEN_SECRET = "dummy"
+LOGIN_MANDATORY_FIELDS = {"email", "password"}
+RECOVER_PASSWORD_MANDATORY_FIELDS = {"email"}
+NEW_PASSWORD_MANDATORY_FIELDS = {"email", "new_password", "token"}
+USERS_REGISTER_MANDATORY_FIELDS = {"email", "password", "phone_number", "fullname", "photo"}
 
 
 class Controller:
     logger = logging.getLogger(__name__)
-    def __init__(self, database: Database):
+    def __init__(self, database: Database, email_service: EmailService):
         """
         Here the init should receive all the parameters needed to know how to answer all the queries
         """
         self.database = database
-        return
+        self.email_service = email_service
 
     def users_login(self):
         """
         Handles the user login
         :return: a token if the credentials are ok
         """
-        assert request.is_json
+        try:
+            assert request.is_json
+        except AssertionError:
+            return messages.ERROR_JSON % messages.REQUEST_IS_NOT_JSON, 400
         content = request.get_json()
+        if not LOGIN_MANDATORY_FIELDS.issubset(content.keys()):
+            return messages.ERROR_JSON % messages.MISSING_FIELDS_ERROR, 400
         try:
             user = self.database.search_user(content["email"])
         except UserNotFoundError:
             self.logger.debug(messages.USER_NOT_FOUND_MESSAGE % content["email"])
-            return messages.ERROR_JSON % (messages.USER_NOT_FOUND_MESSAGE % content["email"]), 400
+            return messages.ERROR_JSON % (messages.USER_NOT_FOUND_MESSAGE % content["email"]), 404
         secured_password = SecuredPassword.from_raw_password(content["password"])
         if user.password_match(secured_password):
             self.logger.debug(messages.GENERATING_LOGIN_TOKEN_MESSAGE % content["email"])
@@ -49,53 +58,67 @@ class Controller:
     def users_recover_password(self):
         """
         Handles the user recovering
-        :return: /a token for the user to generate a new password
+        :return: a token for the user to generate a new password
         """
-        assert request.is_json
+        try:
+            assert request.is_json
+        except AssertionError:
+            return messages.ERROR_JSON % messages.REQUEST_IS_NOT_JSON, 400
         content = request.get_json()
+        if not RECOVER_PASSWORD_MANDATORY_FIELDS.issubset(content.keys()):
+            return messages.ERROR_JSON % messages.MISSING_FIELDS_ERROR, 400
         try:
             user = self.database.search_user(content["email"])
         except UserNotFoundError:
             self.logger.debug(messages.USER_NOT_FOUND_MESSAGE % content["email"])
-            return messages.ERROR_JSON % (messages.USER_NOT_FOUND_MESSAGE % content["email"]), 400
+            return messages.ERROR_JSON % (messages.USER_NOT_FOUND_MESSAGE % content["email"]), 404
         self.logger.debug(messages.GENERATING_RECOVERY_TOKEN_MESSAGE % content["email"])
         user_token = UserRecoveryToken.from_user(user, RECOVERY_TOKEN_SECRET)
         self.database.save_user_recovery_token(user_token)
-        #return user_token.get_token()
-        return EmailService.send_recovery_email(user, user_token)
-        #TODO: fijarse si ya se creo un token de password-recovery para este usuario
+        self.email_service.send_recovery_email(user, user_token)
+        return messages.SUCCESS_JSON
 
     def users_new_password(self):
         """
         Handles the new password setting
         """
-        assert request.is_json
+        try:
+            assert request.is_json
+        except AssertionError:
+            return messages.ERROR_JSON % messages.REQUEST_IS_NOT_JSON, 400
         content = request.get_json()
+        if not NEW_PASSWORD_MANDATORY_FIELDS.issubset(content.keys()):
+            return messages.ERROR_JSON % messages.MISSING_FIELDS_ERROR, 400
         try:
             user = self.database.search_user(content["email"])
         except UserNotFoundError:
             self.logger.debug(messages.USER_NOT_FOUND_MESSAGE % content["email"])
-            return messages.ERROR_JSON % (messages.USER_NOT_FOUND_MESSAGE % content["email"]), 400
+            return messages.ERROR_JSON % (messages.USER_NOT_FOUND_MESSAGE % content["email"]), 404
         try:
             user_recovery_token = self.database.search_user_recovery_token(content["email"])
         except UserRecoveryTokenNotFoundError:
             self.logger.debug(messages.USER_RECOVERY_TOKEN_NOT_FOUND_MESSAGE % content["email"])
             return messages.ERROR_JSON % (messages.USER_RECOVERY_TOKEN_NOT_FOUND_MESSAGE % content["email"]), 400
-        #TODO: implementar update
         if user_recovery_token.token_match(content["token"]):
-            self.database.update_password(user, content["new_password"])
+            user.set_password(SecuredPassword.from_raw_password(content["new_password"]))
+            self.database.save_user(user)
             self.logger.debug(messages.NEW_PASSWORD_SUCCESS_MESSAGE % content["email"])
-            return messages.ERROR_JSON % (messages.NEW_PASSWORD_SUCCESS_MESSAGE % content["email"]), 200
+            return messages.SUCCESS_JSON
         else:
-            self.logger.info(messages.INVALID_TOKEN_MESSAGE % content["email"])
+            self.logger.debug(messages.INVALID_TOKEN_MESSAGE % content["email"])
             return messages.ERROR_JSON % (messages.INVALID_TOKEN_MESSAGE % content["email"]), 400
 
     def users_register(self):
         """
         Handles the user registration
         """
-        assert request.is_json
+        try:
+            assert request.is_json
+        except AssertionError:
+            return messages.ERROR_JSON % messages.REQUEST_IS_NOT_JSON, 400
         content = request.get_json()
+        if not USERS_REGISTER_MANDATORY_FIELDS.issubset(content.keys()):
+            return messages.ERROR_JSON % messages.MISSING_FIELDS_ERROR, 400
         try:
             self.database.search_user(content["email"])
             return messages.ERROR_JSON % (messages.USER_ALREADY_REGISTERED_MESSAGE % content["email"]), 400
@@ -117,12 +140,15 @@ class Controller:
         return messages.SUCCESS_JSON
 
     def users_profile_query(self):
-        email_query = request.args.get('email')
+        try:
+            email_query = request.args.get('email')
+        except Exception:
+            return messages.ERROR_JSON % messages.MISSING_FIELDS_ERROR, 400
         try:
             user = self.database.search_user(email_query)
         except UserNotFoundError:
             self.logger.debug(messages.USER_NOT_FOUND_MESSAGE % email_query)
-            return messages.ERROR_JSON % (messages.USER_NOT_FOUND_MESSAGE % email_query), 400
+            return messages.ERROR_JSON % (messages.USER_NOT_FOUND_MESSAGE % email_query), 404
 
         serialized_user_dic = SerializedUser.from_user(user)._asdict()
         """

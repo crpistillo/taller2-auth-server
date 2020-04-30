@@ -101,14 +101,5 @@ class RamDatabase(Database):
         self.logger.debug("Loading user_recovery_token with email %s" % email)
         serialized_user_recovery_token = self.serialized_user_recovery_tokens[email]
         return UserRecoveryToken(email=serialized_user_recovery_token.email, token=serialized_user_recovery_token.token,
-                    timestamp=serialized_user_recovery_token.timestamp)
-
-    def update_password(self, user: User, new_password: str) -> NoReturn:
-        """
-        Updates the password from the user
-
-        :param user: the user to update
-        :param new_password: the new password
-        """
-        pass
+                                 timestamp=serialized_user_recovery_token.timestamp)
 

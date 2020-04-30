@@ -1,10 +1,13 @@
 from typing import NamedTuple
 from src.database.database import Database
+from src.services.email import EmailService
 from yaml import load
 from yaml import Loader
 
 class AuthServerConfig(NamedTuple):
     database: Database
+    email_service: EmailService
+
 
 
 def load_config(config_path: str) -> AuthServerConfig:
@@ -20,4 +23,4 @@ def load_config(config_path: str) -> AuthServerConfig:
     database_name = config_dict["database"]
     database = Database.factory(database_name, **config_dict["databases"][database_name])
 
-    return AuthServerConfig(database=database)
+    return AuthServerConfig(database=database, email_service=EmailService())

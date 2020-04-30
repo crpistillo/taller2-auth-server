@@ -51,6 +51,6 @@ class UserRecoveryToken:
         :param other: other token
         :return: a boolean indicating if the tokens are equal
         """
-        return other.__eq__(self.token)
+        return other == self.token
 
 

@@ -11,7 +11,7 @@ class Database:
     def save_user(self, user: User) -> NoReturn:
         """
         Saves an user
-            if the user exists in the database it uploads its fields
+            if the user exists in the database it updates its fields
             if the user does not exist it creates it with the corresponding fields
 
         :param user: the user to save
@@ -54,15 +54,6 @@ class Database:
 
         :param user: the user to login
         :return: an string token for future authentication
-        """
-
-    @abstractmethod
-    def update_password(self, user: User, new_password: str) -> NoReturn:
-        """
-        Updates the password from the user
-
-        :param user: the user to update
-        :param new_password: the new password
         """
 
     @abstractmethod

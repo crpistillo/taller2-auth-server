@@ -1,0 +1,168 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "The auth server of Chotuve",
+    "version": "1.0.0",
+    "title": "Chotuve auth server"
+  },
+  "tags": [
+    {
+      "name": "user",
+      "description": "Operations with user"
+    }
+  ],
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "paths": {
+    "/user": {
+      "post": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Create user",
+        "description": "Creates an user",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Created user object",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "400": {
+            "description": "User already created or invalid fields"
+          },
+          "403": {
+            "description": "Not authorized"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Query users",
+        "description": "Queries all the user information",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "description": "The user name for login",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
+      }
+    },
+    "/user/login": {
+      "post": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Login",
+        "description": "Logins a user",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Login with a user",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string"
+                },
+                "password": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "$ref": "#/definitions/LoginToken"
+            }
+          },
+          "400": {
+            "description": "Invalid password"
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "User": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "fullname": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "phone_number": {
+          "type": "string"
+        },
+        "photo": {
+          "type": "string"
+        }
+      },
+      "xml": {
+        "name": "User"
+      }
+    },
+    "LoginToken": {
+      "type": "object",
+      "properties": {
+        "login_token": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

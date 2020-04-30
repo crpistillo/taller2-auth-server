@@ -10,4 +10,4 @@ class TestUserRecoverPassword(unittest.TestCase):
         with self.app.test_client() as c:
             response = c.post('/users/recover_password', data='{"email":"cpistillo@fi.uba.ar"}',
                               headers={"Content-Type": "application/json"})
-            self.assertEqual(response.status_code, 400)
+            self.assertEqual(response.status_code, 404)

@@ -43,7 +43,10 @@ class User:
     def get_secured_password_string(self) -> str:
         return self.secured_password.serialize()
 
-    def password_match(self, other: 'SecuredPassword') -> bool:
+    def set_password(self, secured_password: SecuredPassword):
+        self.secured_password = secured_password
+
+    def password_match(self, other: SecuredPassword) -> bool:
         """
         Responsible for comparing to SecuredPasswords
 
