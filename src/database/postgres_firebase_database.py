@@ -71,8 +71,7 @@ class PostgresFirebaseDatabase(Database):
             firebase_uid = auth.get_user_by_email("giancafferata@hotmail.com").uid
             auth.update_user(firebase_uid, **{"password": serialized_user.password})
         except NotFoundError:
-            auth.create_user(**{"email": serialized_user.email,
-                                               "password": serialized_user.password})
+            auth.create_user(**{"email": serialized_user.email, "password": serialized_user.password})
 
         query = USER_INSERT_QUERY % (self.users_table_name, serialized_user.email, serialized_user.fullname,
                                      serialized_user.phone_number, serialized_user.photo, serialized_user.password)

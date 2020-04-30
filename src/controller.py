@@ -40,9 +40,11 @@ class Controller:
         try:
             assert request.is_json
         except AssertionError:
+            self.logger.debug(messages.REQUEST_IS_NOT_JSON)
             return messages.ERROR_JSON % messages.REQUEST_IS_NOT_JSON, 400
         content = request.get_json()
         if not LOGIN_MANDATORY_FIELDS.issubset(content.keys()):
+            self.logger.debug(messages.MISSING_FIELDS_ERROR)
             return messages.ERROR_JSON % messages.MISSING_FIELDS_ERROR, 400
         try:
             user = self.database.search_user(content["email"])
@@ -66,9 +68,11 @@ class Controller:
         try:
             assert request.is_json
         except AssertionError:
+            self.logger.debug(messages.REQUEST_IS_NOT_JSON)
             return messages.ERROR_JSON % messages.REQUEST_IS_NOT_JSON, 400
         content = request.get_json()
         if not RECOVER_PASSWORD_MANDATORY_FIELDS.issubset(content.keys()):
+            self.logger.debug(messages.MISSING_FIELDS_ERROR)
             return messages.ERROR_JSON % messages.MISSING_FIELDS_ERROR, 400
         try:
             user = self.database.search_user(content["email"])
@@ -89,9 +93,11 @@ class Controller:
         try:
             assert request.is_json
         except AssertionError:
+            self.logger.debug(messages.REQUEST_IS_NOT_JSON)
             return messages.ERROR_JSON % messages.REQUEST_IS_NOT_JSON, 400
         content = request.get_json()
         if not NEW_PASSWORD_MANDATORY_FIELDS.issubset(content.keys()):
+            self.logger.debug(messages.MISSING_FIELDS_ERROR)
             return messages.ERROR_JSON % messages.MISSING_FIELDS_ERROR, 400
         try:
             user = self.database.search_user(content["email"])
@@ -120,9 +126,11 @@ class Controller:
         try:
             assert request.is_json
         except AssertionError:
+            self.logger.debug(messages.REQUEST_IS_NOT_JSON)
             return messages.ERROR_JSON % messages.REQUEST_IS_NOT_JSON, 400
         content = request.get_json()
         if not USERS_REGISTER_MANDATORY_FIELDS.issubset(content.keys()):
+            self.logger.debug(messages.MISSING_FIELDS_ERROR)
             return messages.ERROR_JSON % messages.MISSING_FIELDS_ERROR, 400
         try:
             self.database.search_user(content["email"])
@@ -149,6 +157,7 @@ class Controller:
         try:
             email_query = request.args.get('email')
         except Exception:
+            self.logger.debug(messages.MISSING_FIELDS_ERROR)
             return messages.ERROR_JSON % messages.MISSING_FIELDS_ERROR, 400
         try:
             user = self.database.search_user(email_query)
