@@ -7,6 +7,7 @@ class Database:
     """
     Database abstraction
     """
+
     @abstractmethod
     def save_user(self, user: User) -> NoReturn:
         """

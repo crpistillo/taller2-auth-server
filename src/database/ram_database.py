@@ -61,6 +61,7 @@ class RamDatabase(Database):
         :return: an string token for future authentication
         """
         token = hashlib.sha256(user.get_email().encode("utf-8")).hexdigest()
+        self.logger.debug("Logging user with email %s" % user.get_email())
         self.tokens[token] = user.get_email()
         return token
 
@@ -72,6 +73,7 @@ class RamDatabase(Database):
         :param login_token: the login token string
         :return: the user associated
         """
+        self.logger.debug("Retrieving user by token")
         if login_token not in self.tokens:
             raise InvalidLoginToken
         return self.search_user(self.tokens[login_token])

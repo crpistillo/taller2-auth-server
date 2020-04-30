@@ -34,7 +34,6 @@ class PostgresFirebaseDatabase(Database):
     """
     logger = logging.getLogger(__name__)
     # TODO: avoid sql injection
-    # TODO: add logs
     def __init__(self, users_table_name: str, recovery_token_table_name: str, postgr_host_env_name: str,
                  postgr_user_env_name: str, postgr_pass_env_name: str, postgr_database_env_name: str,
                  firebase_json_env_name: str, firebase_api_key_env_name: str):
@@ -54,8 +53,18 @@ class PostgresFirebaseDatabase(Database):
         self.conn = psycopg2.connect(host=os.environ[postgr_host_env_name], user=os.environ[postgr_user_env_name],
                                      password=os.environ[postgr_pass_env_name],
                                      database=os.environ[postgr_database_env_name])
+        if self.conn.closed == 0:
+            self.logger.info("Connected to postgres database")
+        else:
+            self.logger.error("Unable to connect to postgres database")
+            raise ConnectionError("Unable to connect to postgres database")
         cred = credentials.Certificate(json.loads(os.environ[firebase_json_env_name]))
         firebase_admin.initialize_app(cred)
+        if firebase_admin.get_app():
+            self.logger.info("Connected to firebase")
+        else:
+            self.logger.error("Unable to connect to firebase")
+            raise ConnectionError("Unable to connect to firebase")
         self.firebase_api_key = os.environ[firebase_api_key_env_name]
 
     def save_user(self, user: User) -> NoReturn:
@@ -68,6 +77,7 @@ class PostgresFirebaseDatabase(Database):
         """
         cursor = self.conn.cursor()
         serialized_user = SerializedUser.from_user(user)
+        self.logger.debug("Saving user with email %s" % serialized_user.email)
         try:
             firebase_uid = auth.get_user_by_email("giancafferata@hotmail.com").uid
             auth.update_user(firebase_uid, **{"password": serialized_user.password})
@@ -91,6 +101,7 @@ class PostgresFirebaseDatabase(Database):
         :return: an User object
         """
         cursor = self.conn.cursor()
+        self.logger.debug("Loading user with email %s" % email)
         cursor.execute(SEARCH_USER_QUERY % (self.users_table_name, email))
         result = cursor.fetchone()
         if not result:
@@ -129,6 +140,7 @@ class PostgresFirebaseDatabase(Database):
         :param user: the user to login
         :return: an string token for future authentication
         """
+        self.logger.debug("Logging user with email %s" % user.get_email())
         idToken = self.sign_in_with_email_and_password(user.get_email(), user.get_secured_password_string())
         return idToken
 
@@ -140,6 +152,7 @@ class PostgresFirebaseDatabase(Database):
         :param login_token: the login token string
         :return: the user associated
         """
+        self.logger.debug("Retrieving user by token")
         user_email = auth.verify_id_token(login_token)["email"]
         return self.search_user(user_email)
 
