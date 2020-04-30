@@ -6,6 +6,17 @@ class TestUserLogin(unittest.TestCase):
         self.app = create_application()
         self.app.testing = True
 
+    def test_login_no_json(self):
+        with self.app.test_client() as c:
+            response = c.post('/user/login', data='')
+            self.assertEqual(response.status_code, 400)
+
+    def test_login_missing_fields(self):
+        with self.app.test_client() as c:
+            response = c.post('/user/login', data='{"email":"cpistillo@fi.uba.ar"}',
+                              headers={"Content-Type": "application/json"})
+            self.assertEqual(response.status_code, 400)
+
     def test_login_for_non_existing_user_error(self):
         with self.app.test_client() as c:
             response = c.post('/user/login', data='{"email":"cpistillo@fi.uba.ar", "password": "carolina" }',

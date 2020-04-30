@@ -154,9 +154,8 @@ class Controller:
 
     @cross_origin()
     def users_profile_query(self):
-        try:
-            email_query = request.args.get('email')
-        except Exception:
+        email_query = request.args.get('email')
+        if not email_query:
             self.logger.debug(messages.MISSING_FIELDS_ERROR)
             return messages.ERROR_JSON % messages.MISSING_FIELDS_ERROR, 400
         try:
