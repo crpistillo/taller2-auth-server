@@ -80,7 +80,7 @@ class RamDatabase(Database):
         """
         Saves an user recovery token
 
-        :param user_token: the user token to save
+        :param user_recovery_token: the user token to save
         """
         serialized_user_recovery_token = SerializedUserRecoveryToken.from_user_recovery_token(user_recovery_token)
         self.logger.debug("Saving user recovery token with email %s" % serialized_user_recovery_token.email)

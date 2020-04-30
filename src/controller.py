@@ -166,10 +166,6 @@ class Controller:
             return messages.ERROR_JSON % (messages.USER_NOT_FOUND_MESSAGE % email_query), 404
 
         serialized_user_dic = SerializedUser.from_user(user)._asdict()
-        """
-        #TODO: retrieve real photo
-        serialized_user_dic["photo"] = ""
-        return json.dumps({k:v for k,v in serialized_user_dic.items() if k!="password"})"""
         return json.dumps(serialized_user_dic)
 
     @cross_origin()

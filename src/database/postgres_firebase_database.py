@@ -34,6 +34,7 @@ class PostgresFirebaseDatabase(Database):
     """
     logger = logging.getLogger(__name__)
     # TODO: avoid sql injection
+    # TODO: add logs
     def __init__(self, users_table_name: str, recovery_token_table_name: str, postgr_host_env_name: str,
                  postgr_user_env_name: str, postgr_pass_env_name: str, postgr_database_env_name: str,
                  firebase_json_env_name: str, firebase_api_key_env_name: str):
@@ -142,9 +143,19 @@ class PostgresFirebaseDatabase(Database):
         user_email = auth.verify_id_token(login_token)["email"]
         return self.search_user(user_email)
 
-    def save_recovery_token(self, user_token: UserRecoveryToken) -> NoReturn:
+    def save_user_recovery_token(self, user_recovery_token: UserRecoveryToken) -> NoReturn:
         """
         Saves an user recovery token
 
-        :param user_token: the user token to save
+        :param user_recovery_token: the user token to save
+        """
+
+    def search_user_recovery_token(self, email: str) -> UserRecoveryToken:
+        """
+        Searches an user_recovery_token by its email
+            if the user_recovery_token exists it returns a UserRecoveryToken
+            if the user does not exist it raises a UserNotFoundError
+
+        :param email: the email to search the user
+        :return: an UserRecoveryToken object
         """
