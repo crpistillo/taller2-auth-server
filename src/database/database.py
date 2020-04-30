@@ -42,7 +42,7 @@ class Database:
         """
         Searches an user_recovery_token by its email
             if the user_recovery_token exists it returns a UserRecoveryToken
-            if the user does not exist it raises a UserNotFoundError
+            if the token does not exist it raises a UserRecoveryTokenNotFoundError
 
         :param email: the email to search the user
         :return: an UserRecoveryToken object

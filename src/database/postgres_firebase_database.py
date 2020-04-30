@@ -3,7 +3,9 @@ from src.model.user import User
 from src.model.user_recovery_token import UserRecoveryToken
 from src.database.database import Database
 from src.database.serialized.serialized_user import SerializedUser
+from src.database.serialized.serialized_user_recovery_token import SerializedUserRecoveryToken
 from src.database.exceptions.user_not_found_error import UserNotFoundError
+from src.database.exceptions.user_recovery_token_not_found_error import UserRecoveryTokenNotFoundError
 from src.model.secured_password import SecuredPassword
 import psycopg2
 import firebase_admin
@@ -25,6 +27,16 @@ VALUES ('%s', '%s', '%s', '%s', '%s')
 SEARCH_USER_QUERY = """SELECT email, fullname, phone_number, photo, password
 FROM %s
 WHERE email='%s'
+"""
+
+RECOVERY_TOKEN_INSERT_QUERY = """
+INSERT INTO %s (email, token, timestamp)
+VALUES ('%s', '%s', '%s')
+"""
+
+RECOVERY_TOKEN_QUERY = """SELECT email, token, timestamp
+FROM %s
+WHERE email='%s' AND timestamp >= now() + INTERVAL 1 DAY;
 """
 
 
@@ -162,13 +174,31 @@ class PostgresFirebaseDatabase(Database):
 
         :param user_recovery_token: the user token to save
         """
+        serialized_user_recovery_token = SerializedUserRecoveryToken.from_user_recovery_token(user_recovery_token)
+        self.logger.debug("Saving user recovery token with email %s" % serialized_user_recovery_token.email)
+        cursor = self.conn.cursor()
+
+        query = RECOVERY_TOKEN_INSERT_QUERY % (self.recovery_token_table_name, serialized_user_recovery_token.email,
+                                               serialized_user_recovery_token.token,
+                                               serialized_user_recovery_token.timestamp)
+        cursor.execute(query)
+        self.conn.commit()
+        cursor.close()
 
     def search_user_recovery_token(self, email: str) -> UserRecoveryToken:
         """
         Searches an user_recovery_token by its email
             if the user_recovery_token exists it returns a UserRecoveryToken
-            if the user does not exist it raises a UserNotFoundError
+            if the token does not exist it raises a UserRecoveryTokenNotFoundError
 
         :param email: the email to search the user
         :return: an UserRecoveryToken object
         """
+        self.logger.debug("Loading user_recovery_token with email %s" % email)
+        cursor = self.conn.cursor()
+        cursor.execute(RECOVERY_TOKEN_QUERY % (self.recovery_token_table_name, email))
+        result = cursor.fetchone()
+        if not result:
+            raise UserRecoveryTokenNotFoundError
+        return UserRecoveryToken(result[0], result[1], result[2])
+

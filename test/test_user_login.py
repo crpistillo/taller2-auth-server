@@ -43,7 +43,7 @@ class TestUserLogin(unittest.TestCase):
             self.assertEqual(response.status_code, 200)
             response = c.post('/user/login', data='{"email":"cpistillo@fi.uba.ar", "password": "caro" }',
                               headers={"Content-Type": "application/json"})
-            self.assertEqual(response.status_code, 400)
+            self.assertEqual(response.status_code, 403)
 
     def test_register_user_and_login_for_non_existing_user_error(self):
         with self.app.test_client() as c:

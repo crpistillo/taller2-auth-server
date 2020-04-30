@@ -6,6 +6,7 @@ from src.database.database import Database
 from src.database.serialized.serialized_user import SerializedUser
 from src.database.serialized.serialized_user_recovery_token import SerializedUserRecoveryToken
 from src.database.exceptions.user_not_found_error import UserNotFoundError
+from src.database.exceptions.user_recovery_token_not_found_error import UserRecoveryTokenNotFoundError
 from src.model.secured_password import SecuredPassword
 from src.database.exceptions.invalid_login_token import InvalidLoginToken
 import logging
@@ -92,14 +93,14 @@ class RamDatabase(Database):
         """
         Searches an user_recovery_token by its email
             if the user_recovery_token exists it returns a UserRecoveryToken
-            if the user does not exist it raises a UserNotFoundError
+            if the token does not exist it raises a UserRecoveryTokenNotFoundError
 
         :param email: the email to search the user
         :return: an UserRecoveryToken object
         """
 
         if email not in self.serialized_user_recovery_tokens:
-            raise UserNotFoundError
+            raise UserRecoveryTokenNotFoundError
         self.logger.debug("Loading user_recovery_token with email %s" % email)
         serialized_user_recovery_token = self.serialized_user_recovery_tokens[email]
         return UserRecoveryToken(email=serialized_user_recovery_token.email, token=serialized_user_recovery_token.token,

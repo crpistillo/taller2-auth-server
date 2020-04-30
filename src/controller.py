@@ -57,7 +57,7 @@ class Controller:
             return json.dumps({"login_token": self.database.login(user)})
         else:
             self.logger.info(messages.WRONG_CREDENTIALS_MESSAGE)
-            return messages.ERROR_JSON % messages.WRONG_CREDENTIALS_MESSAGE, 400
+            return messages.ERROR_JSON % messages.WRONG_CREDENTIALS_MESSAGE, 403
 
     @cross_origin()
     def users_recover_password(self):
