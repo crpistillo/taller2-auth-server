@@ -76,6 +76,12 @@ class Database:
         """
 
     @classmethod
+    def update_user(self, user: User, update_data) -> NoReturn:
+        """
+
+        """
+
+    @classmethod
     def factory(cls, name: str, *args, **kwargs) -> 'Database':
         """
         Factory pattern for database

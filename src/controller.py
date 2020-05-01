@@ -170,13 +170,20 @@ class Controller:
 
     @cross_origin()
     def users_profile_update(self):
-        """try:
+        try:
             assert request.is_json
         except AssertionError:
             self.logger.debug(messages.REQUEST_IS_NOT_JSON)
             return messages.ERROR_JSON % messages.REQUEST_IS_NOT_JSON, 400
-        content = request.get_jon()"""
-        #....................
+        content = request.get_json()
+        try:
+            user = self.database.search_user(content["email"])
+        except UserNotFoundError:
+            self.logger.debug(messages.USER_NOT_FOUND_MESSAGE % content["email"])
+            return messages.ERROR_JSON % (messages.USER_NOT_FOUND_MESSAGE % content["email"]), 404
+        self.database.update_user(user, content)
+        return messages.SUCCESS_JSON
+
 
     @cross_origin()
     def users_delete(self):
@@ -191,7 +198,6 @@ class Controller:
             return messages.ERROR_JSON % (messages.USER_NOT_FOUND_MESSAGE % email_query), 404
         self.database.delete_user(email_query)
         return messages.SUCCESS_JSON
-
 
     @cross_origin()
     def api_health(self):
