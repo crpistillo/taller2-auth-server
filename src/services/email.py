@@ -47,8 +47,7 @@ class EmailService:
         mail = Mail(from_email, to_email, subject, content)
         sg = SendGridAPIClient(self.sendgrid_api_key)
         try:
-            response = sg.client.mail.send.post(request_body=mail.get())
-            response.raise_for_status()
+            sg.client.mail.send.post(request_body=mail.get())
             self.logger.debug("Sent recovery token to %s" % user.get_email())
         except Exception:
             self.logger.exception("Failed to send recovery token to %s" % user.get_email())
