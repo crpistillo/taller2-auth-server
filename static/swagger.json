@@ -42,7 +42,7 @@
             "description": "Successful operation"
           },
           "400": {
-            "description": "User already created or invalid fields"
+            "description": "User already created, invalid or missing fields or the message is not a json"
           },
           "403": {
             "description": "Not authorized"
@@ -116,11 +116,106 @@
           "200": {
             "description": "Successful operation",
             "schema": {
-              "$ref": "#/definitions/LoginToken"
+              "type": "object",
+              "properties": {
+                "login_token": {
+                  "type": "string"
+                }
+              }
             }
           },
           "400": {
+            "description": "Missing fields or not a JSON"
+          },
+          "403": {
+            "description": "Invalid credentials"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
+      }
+    },
+    "/user/recover_password": {
+      "post": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Recover password",
+        "description": "Sends an email to the user with the token required to recover the password",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Sends an email to the user with the token required to recover the password",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "400": {
             "description": "Invalid password"
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
+      }
+    },
+    "/user/new_password": {
+      "post": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Set new password",
+        "description": "Sets a new password using a recovery token",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Sets a new password using a recovery token",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string"
+                },
+                "token": {
+                  "type": "string"
+                },
+                "new_password": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "400": {
+            "description": "Body is not a JSON, missing fields, token does not exists or the token is not valid for the user"
           },
           "403": {
             "description": "Not authorized"
@@ -154,14 +249,6 @@
       },
       "xml": {
         "name": "User"
-      }
-    },
-    "LoginToken": {
-      "type": "object",
-      "properties": {
-        "login_token": {
-          "type": "string"
-        }
       }
     }
   }

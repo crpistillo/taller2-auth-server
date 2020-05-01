@@ -1,5 +1,9 @@
 database: RamDatabase
 
+email_service:
+  sendgrid_email_env_name: "SENDGRID_EMAIL"
+  sendgrid_api_key_env_name: "SENDGRID_API_KEY"
+
 databases:
   RamDatabase: {}
   PostgresFirebaseDatabase:

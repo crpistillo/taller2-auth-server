@@ -57,7 +57,7 @@ class Controller:
             return json.dumps({"login_token": self.database.login(user)})
         else:
             self.logger.info(messages.WRONG_CREDENTIALS_MESSAGE)
-            return messages.ERROR_JSON % messages.WRONG_CREDENTIALS_MESSAGE, 400
+            return messages.ERROR_JSON % messages.WRONG_CREDENTIALS_MESSAGE, 403
 
     @cross_origin()
     def users_recover_password(self):
@@ -154,9 +154,8 @@ class Controller:
 
     @cross_origin()
     def users_profile_query(self):
-        try:
-            email_query = request.args.get('email')
-        except Exception:
+        email_query = request.args.get('email')
+        if not email_query:
             self.logger.debug(messages.MISSING_FIELDS_ERROR)
             return messages.ERROR_JSON % messages.MISSING_FIELDS_ERROR, 400
         try:
@@ -166,10 +165,6 @@ class Controller:
             return messages.ERROR_JSON % (messages.USER_NOT_FOUND_MESSAGE % email_query), 404
 
         serialized_user_dic = SerializedUser.from_user(user)._asdict()
-        """
-        #TODO: retrieve real photo
-        serialized_user_dic["photo"] = ""
-        return json.dumps({k:v for k,v in serialized_user_dic.items() if k!="password"})"""
         return json.dumps(serialized_user_dic)
 
     @cross_origin()

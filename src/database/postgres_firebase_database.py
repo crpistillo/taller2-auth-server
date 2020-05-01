@@ -3,7 +3,9 @@ from src.model.user import User
 from src.model.user_recovery_token import UserRecoveryToken
 from src.database.database import Database
 from src.database.serialized.serialized_user import SerializedUser
+from src.database.serialized.serialized_user_recovery_token import SerializedUserRecoveryToken
 from src.database.exceptions.user_not_found_error import UserNotFoundError
+from src.database.exceptions.user_recovery_token_not_found_error import UserRecoveryTokenNotFoundError
 from src.model.secured_password import SecuredPassword
 import psycopg2
 import firebase_admin
@@ -25,6 +27,16 @@ VALUES ('%s', '%s', '%s', '%s', '%s')
 SEARCH_USER_QUERY = """SELECT email, fullname, phone_number, photo, password
 FROM %s
 WHERE email='%s'
+"""
+
+RECOVERY_TOKEN_INSERT_QUERY = """
+INSERT INTO %s (email, token, timestamp)
+VALUES ('%s', '%s', '%s')
+"""
+
+RECOVERY_TOKEN_QUERY = """SELECT email, token, timestamp
+FROM %s
+WHERE email='%s' AND timestamp >= now() + INTERVAL 1 DAY;
 """
 
 
@@ -53,8 +65,18 @@ class PostgresFirebaseDatabase(Database):
         self.conn = psycopg2.connect(host=os.environ[postgr_host_env_name], user=os.environ[postgr_user_env_name],
                                      password=os.environ[postgr_pass_env_name],
                                      database=os.environ[postgr_database_env_name])
+        if self.conn.closed == 0:
+            self.logger.info("Connected to postgres database")
+        else:
+            self.logger.error("Unable to connect to postgres database")
+            raise ConnectionError("Unable to connect to postgres database")
         cred = credentials.Certificate(json.loads(os.environ[firebase_json_env_name]))
         firebase_admin.initialize_app(cred)
+        if firebase_admin.get_app():
+            self.logger.info("Connected to firebase")
+        else:
+            self.logger.error("Unable to connect to firebase")
+            raise ConnectionError("Unable to connect to firebase")
         self.firebase_api_key = os.environ[firebase_api_key_env_name]
 
     def save_user(self, user: User) -> NoReturn:
@@ -67,6 +89,7 @@ class PostgresFirebaseDatabase(Database):
         """
         cursor = self.conn.cursor()
         serialized_user = SerializedUser.from_user(user)
+        self.logger.debug("Saving user with email %s" % serialized_user.email)
         try:
             firebase_uid = auth.get_user_by_email("giancafferata@hotmail.com").uid
             auth.update_user(firebase_uid, **{"password": serialized_user.password})
@@ -90,6 +113,7 @@ class PostgresFirebaseDatabase(Database):
         :return: an User object
         """
         cursor = self.conn.cursor()
+        self.logger.debug("Loading user with email %s" % email)
         cursor.execute(SEARCH_USER_QUERY % (self.users_table_name, email))
         result = cursor.fetchone()
         if not result:
@@ -128,6 +152,7 @@ class PostgresFirebaseDatabase(Database):
         :param user: the user to login
         :return: an string token for future authentication
         """
+        self.logger.debug("Logging user with email %s" % user.get_email())
         idToken = self.sign_in_with_email_and_password(user.get_email(), user.get_secured_password_string())
         return idToken
 
@@ -139,12 +164,41 @@ class PostgresFirebaseDatabase(Database):
         :param login_token: the login token string
         :return: the user associated
         """
+        self.logger.debug("Retrieving user by token")
         user_email = auth.verify_id_token(login_token)["email"]
         return self.search_user(user_email)
 
-    def save_recovery_token(self, user_token: UserRecoveryToken) -> NoReturn:
+    def save_user_recovery_token(self, user_recovery_token: UserRecoveryToken) -> NoReturn:
         """
         Saves an user recovery token
 
-        :param user_token: the user token to save
+        :param user_recovery_token: the user token to save
         """
+        serialized_user_recovery_token = SerializedUserRecoveryToken.from_user_recovery_token(user_recovery_token)
+        self.logger.debug("Saving user recovery token with email %s" % serialized_user_recovery_token.email)
+        cursor = self.conn.cursor()
+
+        query = RECOVERY_TOKEN_INSERT_QUERY % (self.recovery_token_table_name, serialized_user_recovery_token.email,
+                                               serialized_user_recovery_token.token,
+                                               serialized_user_recovery_token.timestamp)
+        cursor.execute(query)
+        self.conn.commit()
+        cursor.close()
+
+    def search_user_recovery_token(self, email: str) -> UserRecoveryToken:
+        """
+        Searches an user_recovery_token by its email
+            if the user_recovery_token exists it returns a UserRecoveryToken
+            if the token does not exist it raises a UserRecoveryTokenNotFoundError
+
+        :param email: the email to search the user
+        :return: an UserRecoveryToken object
+        """
+        self.logger.debug("Loading user_recovery_token with email %s" % email)
+        cursor = self.conn.cursor()
+        cursor.execute(RECOVERY_TOKEN_QUERY % (self.recovery_token_table_name, email))
+        result = cursor.fetchone()
+        if not result:
+            raise UserRecoveryTokenNotFoundError
+        return UserRecoveryToken(result[0], result[1], result[2])
+

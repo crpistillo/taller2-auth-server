@@ -23,4 +23,5 @@ def load_config(config_path: str) -> AuthServerConfig:
     database_name = config_dict["database"]
     database = Database.factory(database_name, **config_dict["databases"][database_name])
 
-    return AuthServerConfig(database=database, email_service=EmailService())
+    return AuthServerConfig(database=database,
+                            email_service=EmailService(**config_dict["email_service"]))

@@ -12,12 +12,29 @@ class TestUserRegistration(unittest.TestCase):
             response = c.get('/user', query_string={"email": "giancafferata@hotmail.com"})
             self.assertEqual(response.status_code, 404)
 
+    def test_querying_user_without_email(self):
+        with self.app.test_client() as c:
+            response = c.get('/user', query_string={})
+            self.assertEqual(response.status_code, 400)
+
     def test_simple_register(self):
         with self.app.test_client() as c:
             response = c.post('/user', data='{"email":"giancafferata@hotmail.com", "fullname":"Gianmarco Cafferata", '
                                              '"phone_number":"11 1111-1111", "photo":"", "password":"asd123"}',
                               headers={"Content-Type": "application/json"})
             self.assertEqual(response.status_code, 200)
+
+    def test_simple_register_no_json(self):
+        with self.app.test_client() as c:
+            response = c.post('/user', data='')
+            self.assertEqual(response.status_code, 400)
+
+    def test_simple_missing_fields(self):
+        with self.app.test_client() as c:
+            response = c.post('/user', data='{"email":"giancafferata@hotmail.com", "fullname":"Gianmarco Cafferata", '
+                                             '"phone_number":"11 1111-1111", "photo":""}',
+                              headers={"Content-Type": "application/json"})
+            self.assertEqual(response.status_code, 400)
 
     def test_invalid_email_error(self):
         with self.app.test_client() as c:
