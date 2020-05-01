@@ -44,7 +44,7 @@ ON CONFLICT (email) DO UPDATE
 
 RECOVERY_TOKEN_QUERY = """SELECT email, token, timestamp
 FROM %s
-WHERE email='%s' AND timestamp >= now() + INTERVAL 1 DAY;
+WHERE email='%s';
 """
 
 
