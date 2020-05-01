@@ -20,11 +20,11 @@ class EmailService:
         :param sendgrid_api_key_env_name: the env variable where the api key is
         """
         try:
-            self.sendgrid_email_env_name = os.environ[sendgrid_email_env_name]
-            self.sendgrid_api_key_env_name = os.environ[sendgrid_api_key_env_name]
+            self.sendgrid_email = os.environ[sendgrid_email_env_name]
+            self.sendgrid_api_key = os.environ[sendgrid_api_key_env_name]
         except KeyError:
-            self.sendgrid_email_env_name = None
-            self.sendgrid_api_key_env_name = None
+            self.sendgrid_email = None
+            self.sendgrid_api_key = None
             self.logger.error("Failed to initialize email service")
             return
         self.logger.info("Email service initialized")
@@ -37,15 +37,15 @@ class EmailService:
         :param user: The user who will receive the email
         :param user_token: The token to be sent
         """
-        if not self.sendgrid_email_env_name or not self.sendgrid_api_key_env_name:
+        if not self.sendgrid_email or not self.sendgrid_api_key:
             self.logger.error("Failed to send recovery token to %s" % user.get_email())
             return
-        from_email = Email(self.sendgrid_email_env_name)
+        from_email = Email(self.sendgrid_email)
         to_email = To(user.get_email())
         subject = "Chotuve password recovery token"
         content = Content("text/plain", "Recovery token: %s" % user_token.get_token())
         mail = Mail(from_email, to_email, subject, content)
-        sg = SendGridAPIClient(self.sendgrid_api_key_env_name)
+        sg = SendGridAPIClient(self.sendgrid_api_key)
         try:
             response = sg.client.mail.send.post(request_body=mail.get())
             response.raise_for_status()
