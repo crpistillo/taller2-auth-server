@@ -81,6 +81,38 @@
             "description": "User not found"
           }
         }
+      },
+      "put": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Update users profile",
+        "description": "Updates the data of the user",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "The user data to be updated",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "400": {
+            "description": "Invalid or missing fields or the message is not a json"
+          },
+          "403": {
+            "description": "Not authorized"
+          }
+        }
       }
     },
     "/user/login": {
