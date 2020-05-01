@@ -5,6 +5,7 @@ before_install:
   - python --version
   - pip install -r requirements.txt
   - pip install -r requirements-travis.txt
+  - sudo apt install postgresql-server-dev-10 postgresql-10
 script: pytest test
 after_success:
   - pytest --cov=. test/
