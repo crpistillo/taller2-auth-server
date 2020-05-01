@@ -152,6 +152,7 @@ class Controller:
         self.database.save_user(user)
         return messages.SUCCESS_JSON
 
+    #TODO: que no devuelva la password
     @cross_origin()
     def users_profile_query(self):
         email_query = request.args.get('email')
@@ -166,6 +167,31 @@ class Controller:
 
         serialized_user_dic = SerializedUser.from_user(user)._asdict()
         return json.dumps(serialized_user_dic)
+
+    @cross_origin()
+    def users_profile_update(self):
+        """try:
+            assert request.is_json
+        except AssertionError:
+            self.logger.debug(messages.REQUEST_IS_NOT_JSON)
+            return messages.ERROR_JSON % messages.REQUEST_IS_NOT_JSON, 400
+        content = request.get_jon()"""
+        #....................
+
+    @cross_origin()
+    def users_delete(self):
+        email_query = request.args.get('email')
+        if not email_query:
+            self.logger.debug(messages.MISSING_FIELDS_ERROR)
+            return messages.ERROR_JSON % messages.MISSING_FIELDS_ERROR, 400
+        try:
+            self.database.search_user(email_query)
+        except UserNotFoundError:
+            self.logger.debug(messages.USER_NOT_FOUND_MESSAGE % email_query)
+            return messages.ERROR_JSON % (messages.USER_NOT_FOUND_MESSAGE % email_query), 404
+        self.database.delete_user(email_query)
+        return messages.SUCCESS_JSON
+
 
     @cross_origin()
     def api_health(self):
