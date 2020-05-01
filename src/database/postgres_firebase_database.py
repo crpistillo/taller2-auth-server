@@ -22,6 +22,7 @@ FIREBASE_LOGIN_API_URL = "https://identitytoolkit.googleapis.com/v1/accounts:sig
 USER_INSERT_QUERY = """
 INSERT INTO %s (email, fullname, phone_number, photo, password)
 VALUES ('%s', '%s', '%s', '%s', '%s')
+ON DUPLICATE KEY UPDATE
 """
 
 SEARCH_USER_QUERY = """SELECT email, fullname, phone_number, photo, password
@@ -32,6 +33,7 @@ WHERE email='%s'
 RECOVERY_TOKEN_INSERT_QUERY = """
 INSERT INTO %s (email, token, timestamp)
 VALUES ('%s', '%s', '%s')
+ON DUPLICATE KEY UPDATE
 """
 
 RECOVERY_TOKEN_QUERY = """SELECT email, token, timestamp
