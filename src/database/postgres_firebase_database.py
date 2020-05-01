@@ -141,15 +141,15 @@ class PostgresFirebaseDatabase(Database):
         :param password: the user password
         :return: an id token
         """
-        payload = json.dumps({
+        payload = {
             "email": email,
             "password": password,
             "returnSecureToken": True
-        })
+        }
 
         r = requests.post(FIREBASE_LOGIN_API_URL,
                           params={"key": self.firebase_api_key},
-                          data=payload)
+                          json=payload)
         r.raise_for_status()
 
         return r.json()["idToken"]
