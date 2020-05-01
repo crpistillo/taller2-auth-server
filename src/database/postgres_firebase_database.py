@@ -120,8 +120,9 @@ class PostgresFirebaseDatabase(Database):
             raise UserNotFoundError
         secured_password = SecuredPassword(result[4])
         cursor.close()
+        #TODO: return the actual photo
         return User(email=result[0], fullname=result[1],
-                    phone_number=result[2], photo=result[3],
+                    phone_number=result[2], photo="",
                     secured_password=secured_password)
 
     def sign_in_with_email_and_password(self, email: str, password: str) -> str:

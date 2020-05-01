@@ -51,5 +51,5 @@ class EmailService:
             response.raise_for_status()
             self.logger.debug("Sent recovery token to %s" % user.get_email())
         except Exception:
-            self.logger.error("Failed to send recovery token to %s" % user.get_email())
+            self.logger.exception("Failed to send recovery token to %s" % user.get_email())
             return
