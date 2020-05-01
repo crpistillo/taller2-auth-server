@@ -20,8 +20,13 @@ import requests
 FIREBASE_LOGIN_API_URL = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword"
 
 USER_INSERT_QUERY = """
-REPLACE INTO %s (email, fullname, phone_number, photo, password)
+INSERT INTO %s (email, fullname, phone_number, photo, password)
 VALUES ('%s', '%s', '%s', '%s', '%s')
+ON CONFLICT (email) DO UPDATE 
+  SET fullname = excluded.fullname, 
+      phone_number = excluded.phone_number,
+      photo = excluded.photo
+      password = excluded.password;
 """
 
 SEARCH_USER_QUERY = """SELECT email, fullname, phone_number, photo, password
@@ -30,8 +35,11 @@ WHERE email='%s'
 """
 
 RECOVERY_TOKEN_INSERT_QUERY = """
-REPLACE INTO %s (email, token, timestamp)
+INSERT INTO %s (email, token, timestamp)
 VALUES ('%s', '%s', '%s')
+ON CONFLICT (email) DO UPDATE 
+  SET token = excluded.token, 
+      timestamp = excluded.timestamp;
 """
 
 RECOVERY_TOKEN_QUERY = """SELECT email, token, timestamp
