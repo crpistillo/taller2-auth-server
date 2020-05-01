@@ -17,7 +17,7 @@ class User:
     photo: str
     secured_password: SecuredPassword
     def __init__(self, email: str, fullname: str, phone_number: str, photo: str,
-                 secured_password: SecuredPassword):
+                 secured_password: SecuredPassword, admin: bool = False):
         """
         User initializer
 
@@ -25,6 +25,7 @@ class User:
         :param fullname: the fullname of the user
         :param phone_number: the phone number of the user
         :param photo: the photo as bytes
+        :param admin: if the user is an admin
         :param secured_password: a SecuredPassword object
         """
         if not re.fullmatch(PHONE_NUMBER_REGEX, phone_number, re.IGNORECASE):
@@ -35,6 +36,7 @@ class User:
         self.fullname = fullname
         self.phone_number = phone_number
         self.photo = photo
+        self.admin = admin
         self.secured_password = secured_password
 
     def get_email(self) -> str:
@@ -45,6 +47,9 @@ class User:
 
     def set_password(self, secured_password: SecuredPassword):
         self.secured_password = secured_password
+
+    def is_admin(self):
+        return self.admin
 
     def password_match(self, other: SecuredPassword) -> bool:
         """

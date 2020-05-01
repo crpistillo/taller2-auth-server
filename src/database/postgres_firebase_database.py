@@ -20,16 +20,17 @@ import requests
 FIREBASE_LOGIN_API_URL = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword"
 
 USER_INSERT_QUERY = """
-INSERT INTO %s (email, fullname, phone_number, photo, password)
-VALUES ('%s', '%s', '%s', '%s', '%s')
+INSERT INTO %s (email, fullname, phone_number, photo, password, admin)
+VALUES ('%s', '%s', '%s', '%s', '%s', '%s')
 ON CONFLICT (email) DO UPDATE 
   SET fullname = excluded.fullname, 
       phone_number = excluded.phone_number,
       photo = excluded.photo,
-      password = excluded.password;
+      password = excluded.password,
+      admin = excluded.admin;
 """
 
-SEARCH_USER_QUERY = """SELECT email, fullname, phone_number, photo, password
+SEARCH_USER_QUERY = """SELECT email, fullname, phone_number, photo, password, admin
 FROM %s
 WHERE email='%s'
 """
@@ -105,7 +106,8 @@ class PostgresFirebaseDatabase(Database):
             auth.create_user(**{"email": serialized_user.email, "password": serialized_user.password})
 
         query = USER_INSERT_QUERY % (self.users_table_name, serialized_user.email, serialized_user.fullname,
-                                     serialized_user.phone_number, serialized_user.photo, serialized_user.password)
+                                     serialized_user.phone_number, serialized_user.photo, serialized_user.password,
+                                     serialized_user.admin)
         cursor.execute(query)
         self.conn.commit()
         cursor.close()
@@ -131,7 +133,8 @@ class PostgresFirebaseDatabase(Database):
         #TODO: return the actual photo
         return User(email=result[0], fullname=result[1],
                     phone_number=result[2], photo="",
-                    secured_password=secured_password)
+                    secured_password=secured_password,
+                    admin=result[5])
 
     def sign_in_with_email_and_password(self, email: str, password: str) -> str:
         """

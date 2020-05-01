@@ -1,5 +1,6 @@
 import json
 import logging
+from typing import Optional
 from .constants import messages
 from .database.database import Database
 from .database.exceptions.user_recovery_token_not_found_error import UserRecoveryTokenNotFoundError
@@ -9,11 +10,14 @@ from src.database.exceptions.user_not_found_error import UserNotFoundError
 from src.model.exceptions.invalid_phone_number_error import InvalidPhoneNumberError
 from src.model.exceptions.invalid_email_error import InvalidEmailError
 from src.database.serialized.serialized_user import SerializedUser
+from src.database.exceptions.invalid_login_token import InvalidLoginToken
 from flask import request
 from src.model.user_recovery_token import UserRecoveryToken
 from .services.email import EmailService
 from flask_cors import cross_origin
+from flask_httpauth import HTTPTokenAuth
 
+auth = HTTPTokenAuth(scheme='Bearer')
 
 RECOVERY_TOKEN_SECRET = "dummy"
 LOGIN_MANDATORY_FIELDS = {"email", "password"}
@@ -28,6 +32,20 @@ class Controller:
         """
         Here the init should receive all the parameters needed to know how to answer all the queries
         """
+
+        @auth.verify_token
+        def verify_token(token) -> Optional[User]:
+            """
+            Verifies a token
+
+            :param token: the token to verify
+            :return: the corresponding user
+            """
+            try:
+                return self.database.get_user_by_token(token)
+            except InvalidLoginToken:
+                return
+
         self.database = database
         self.email_service = email_service
 
@@ -153,8 +171,12 @@ class Controller:
         return messages.SUCCESS_JSON
 
     @cross_origin()
+    @auth.login_required
     def users_profile_query(self):
         email_query = request.args.get('email')
+        if email_query != auth.current_user().get_email() and not auth.current_user().is_admin():
+            self.logger.debug(messages.USER_NOT_AUTHORIZED_ERROR)
+            return messages.ERROR_JSON % messages.USER_NOT_AUTHORIZED_ERROR, 403
         if not email_query:
             self.logger.debug(messages.MISSING_FIELDS_ERROR)
             return messages.ERROR_JSON % messages.MISSING_FIELDS_ERROR, 400
