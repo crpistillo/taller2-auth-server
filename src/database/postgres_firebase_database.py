@@ -25,7 +25,7 @@ VALUES ('%s', '%s', '%s', '%s', '%s')
 ON CONFLICT (email) DO UPDATE 
   SET fullname = excluded.fullname, 
       phone_number = excluded.phone_number,
-      photo = excluded.photo
+      photo = excluded.photo,
       password = excluded.password;
 """
 
