@@ -60,3 +60,5 @@ class TestUserRegistration(unittest.TestCase):
                              data='{"fullname":"Carolina Pistillo", "phone_number":"11 3263-7625", "photo":"caro.jpg", '
                                   '"password":"carolina"}', headers={"Content-Type": "application/json"})
             self.assertEqual(response.status_code, 404)
+
+

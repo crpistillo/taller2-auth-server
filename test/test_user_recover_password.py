@@ -53,6 +53,26 @@ class TestUserRecoverPassword(unittest.TestCase):
                               headers={"Content-Type": "application/json"})
             self.assertEqual(response.status_code, 200)
 
+    @mock.patch('src.services.email.EmailService.send_recovery_email')
+    def test_user_recover_password_and_delete_non_existing_user_error(self, mock_send_recovery_email):
+        with self.app.test_client() as c:
+            response = c.post('/user/recover_password', data='{"email":"giancafferata@hotmail.com"}',
+                              headers={"Content-Type": "application/json"})
+            self.assertEqual(response.status_code, 200)
+            mock_send_recovery_email.assert_called()
+            args = mock_send_recovery_email.call_args_list
+            self.assertEqual(len(args), 1)
+            token = args[0][0][1].get_token()
+            response = c.post('/user/new_password', data='{"email":"giancafferata@hotmail.com", "token": "%s",'
+                                                         '"new_password": "asd1234"}' % token,
+                              headers={"Content-Type": "application/json"})
+            self.assertEqual(response.status_code, 200)
+            response = c.delete('/user', query_string={"email": "giancafferata@hotmail.com"})
+            self.assertEqual(response.status_code, 200)
+            response = c.post('/user/recover_password', data='{"email":"giancafferata@hotmail.com"}',
+                              headers={"Content-Type": "application/json"})
+            self.assertEqual(response.status_code, 404)
+
 
     @mock.patch('src.services.email.EmailService.send_recovery_email')
     def test_recover_password_invalid_token(self, mock_send_recovery_email):
