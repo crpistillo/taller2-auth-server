@@ -26,6 +26,12 @@ class TestUserRecoverPassword(unittest.TestCase):
                               headers={"Content-Type": "application/json"})
             self.assertEqual(response.status_code, 404)
 
+    def test_recover_password_no_mandatory_fields(self):
+        with self.app.test_client() as c:
+            response = c.post('/user/recover_password', data='{"fullname": "Carolina Pistillo"}',
+                              headers={"Content-Type": "application/json"})
+            self.assertEqual(response.status_code, 400)
+
     @mock.patch('src.services.email.EmailService.send_recovery_email')
     def test_simple_recover_password(self, mock_send_recovery_email):
         with self.app.test_client() as c:
@@ -108,3 +114,10 @@ class TestUserRecoverPassword(unittest.TestCase):
         with self.app.test_client() as c:
             response = c.post('/user/new_password', data='')
             self.assertEqual(response.status_code, 400)
+
+    def test_new_password_no_mandatory_fields(self):
+        with self.app.test_client() as c:
+            response = c.post('/user/new_password', data='{"fullname": "Carolina Pistillo"}',
+                              headers={"Content-Type": "application/json"})
+            self.assertEqual(response.status_code, 400)
+

@@ -113,6 +113,39 @@
             "description": "Not authorized"
           }
         }
+      },
+      "delete": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Deletes an user from database",
+        "description": "Removes all user data from database",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "email",
+            "description": "The email of the user to be deleted",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "400": {
+            "description": "Invalid or missing fields or the message is not a json"
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
       }
     },
     "/user/login": {

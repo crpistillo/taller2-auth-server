@@ -35,7 +35,7 @@ class Controller:
     def users_login(self):
         """
         Handles the user login
-        :return: a token if the credentials are ok
+        :return: a json with the login_token on success or an error in another case
         """
         try:
             assert request.is_json
@@ -62,8 +62,9 @@ class Controller:
     @cross_origin()
     def users_recover_password(self):
         """
-        Handles the user recovering
-        :return: a token for the user to generate a new password
+        Handles the user password recovering
+        On success, it sends an email with the token for the user to generate a new password
+        :return: a json with a success message on success or an error in another case
         """
         try:
             assert request.is_json
@@ -89,6 +90,7 @@ class Controller:
     def users_new_password(self):
         """
         Handles the new password setting
+        :return: a json with a success message on success or an error in another case
         """
         try:
             assert request.is_json
@@ -122,6 +124,7 @@ class Controller:
     def users_register(self):
         """
         Handles the user registration
+        :return: a json with a success message on success or an error in another case
         """
         try:
             assert request.is_json
@@ -155,6 +158,10 @@ class Controller:
     #TODO: que no devuelva la password
     @cross_origin()
     def users_profile_query(self):
+        """
+        Handles the user recovering
+        :return: a json with the data of the requested user on success or an error in another case
+        """
         email_query = request.args.get('email')
         if not email_query:
             self.logger.debug(messages.MISSING_FIELDS_ERROR)
@@ -170,6 +177,10 @@ class Controller:
 
     @cross_origin()
     def users_profile_update(self):
+        """
+        Handles updating a user's profile
+        :return: a json with a success message on success or an error in another case
+        """
         email_query = request.args.get('email')
         if not email_query:
             self.logger.debug(messages.MISSING_FIELDS_ERROR)
@@ -191,6 +202,10 @@ class Controller:
 
     @cross_origin()
     def users_delete(self):
+        """
+        Handles the delete of an user
+        :return: a json with a success message on success or an error in another case
+        """
         email_query = request.args.get('email')
         if not email_query:
             self.logger.debug(messages.MISSING_FIELDS_ERROR)
