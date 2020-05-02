@@ -74,8 +74,11 @@
               "$ref": "#/definitions/User"
             }
           },
+          "401": {
+            "description": "Not authenticated"
+          },
           "403": {
-            "description": "Not authorized"
+            "description": "Forbidden querying that profile"
           },
           "404": {
             "description": "User not found"

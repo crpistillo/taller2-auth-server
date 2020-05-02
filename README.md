@@ -103,6 +103,7 @@ create table chotuve.users
 	fullname varchar,
 	phone_number varchar,
 	photo bytea,
+    admin boolean,
 	password varchar
 );
 

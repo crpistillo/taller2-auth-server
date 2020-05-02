@@ -52,7 +52,7 @@ class RamDatabase(Database):
         secured_password = SecuredPassword(serialized_user.password)
         return User(email=serialized_user.email, fullname=serialized_user.fullname,
                     phone_number=serialized_user.phone_number, photo=serialized_user.photo,
-                    secured_password=secured_password)
+                    secured_password=secured_password, admin=serialized_user.admin)
 
     def login(self, user: User) -> str:
         """

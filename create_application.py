@@ -14,18 +14,22 @@ SWAGGER_URL = "/swagger"
 API_URL = "/static/swagger.json"
 
 
-def create_application(config_path: Optional[str] = None):
+def create_application(config_path: Optional[str] = None, return_controller: Optional[bool] = False):
     """
     Creates the flask application
 
     :param config_path: the path to the configuration
+    :param return_controller: if the controller should also be returned as a second value (for testing purposes)
     :return: a Flask app
     """
     if not config_path:
         config_path = DEFAULT_CONFIG_FILE
     config = load_config(config_path)
     controller = Controller(database=config.database, email_service=config.email_service)
-    return create_application_with_controller(controller)
+    if not return_controller:
+        return create_application_with_controller(controller)
+    else:
+        return create_application_with_controller(controller), controller
 
 def create_application_with_controller(controller: Controller):
     app = Flask(__name__)

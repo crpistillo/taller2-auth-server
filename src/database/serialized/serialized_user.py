@@ -9,11 +9,13 @@ class SerializedUser(NamedTuple):
     fullname: str
     phone_number: str
     photo: str
+    admin: bool
     password: str
 
     @classmethod
     def from_user(cls, user: User) -> 'SerializedUser':
-        return SerializedUser(email=user.email,fullname=user.fullname,
+        return SerializedUser(email=user.get_email(),fullname=user.fullname,
                               phone_number=user.phone_number, photo=user.photo,
-                              password=user.secured_password.serialize())
+                              admin=user.is_admin(),
+                              password=user.get_secured_password_string())
 
