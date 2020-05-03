@@ -48,6 +48,12 @@ FROM %s
 WHERE email='%s';
 """
 
+DELETE_USER_QUERY = """
+DELETE FROM %s
+WHERE email='%s';
+DELETE FROM %s
+WHERE email='%s';
+"""
 
 class PostgresFirebaseDatabase(Database):
     """
@@ -55,6 +61,7 @@ class PostgresFirebaseDatabase(Database):
     """
     logger = logging.getLogger(__name__)
     # TODO: avoid sql injection
+    # TODO: ensure all actions are atomic
     def __init__(self, users_table_name: str, recovery_token_table_name: str, postgr_host_env_name: str,
                  postgr_user_env_name: str, postgr_pass_env_name: str, postgr_database_env_name: str,
                  firebase_json_env_name: str, firebase_api_key_env_name: str):
@@ -213,4 +220,19 @@ class PostgresFirebaseDatabase(Database):
         if not result:
             raise UserRecoveryTokenNotFoundError
         return UserRecoveryToken(result[0], result[1], result[2])
+
+
+    def delete_user(self, email: str) -> NoReturn:
+        """
+        Removes all user data from database
+
+        :param email: the email of the user to be deleted
+        """
+        cursor = self.conn.cursor()
+        cursor.execute(DELETE_USER_QUERY % (self.recovery_token_table_name, email,
+                                            self.users_table_name, email))
+        self.conn.commit()
+        cursor.close()
+        firebase_uid = auth.get_user_by_email("giancafferata@hotmail.com").uid
+        auth.delete_user(firebase_uid)
 

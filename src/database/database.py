@@ -1,7 +1,10 @@
-from typing import NoReturn
+from typing import NoReturn, Tuple
 from src.model.user import User
 from abc import abstractmethod
 from src.model.user_recovery_token import UserRecoveryToken
+from src.model.secured_password import SecuredPassword
+from src.database.serialized.serialized_user import SerializedUser
+from typing import List
 
 class Database:
     """
@@ -67,6 +70,32 @@ class Database:
         :return: the user associated
         """
 
+    @abstractmethod
+    def delete_user(self, email: str) -> NoReturn:
+        """
+        Removes all user data from database
+
+        :param email: the email of the user to be deleted
+        """
+
+    def update_user(self, user: User, update_data) -> NoReturn:
+        """
+        Updates a user
+
+        :param user: the user to update
+        :param update_data: the parameters to update
+        """
+        if "password" in update_data:
+            user.set_password(SecuredPassword.from_raw_password(update_data["password"]))
+        if "fullname" in update_data:
+            user.set_fullname(update_data["fullname"])
+        if "phone_number" in update_data:
+            user.set_phone_number(update_data["phone_number"])
+        if "photo" in update_data:
+            user.set_photo(update_data["photo"])
+
+        self.save_user(user)
+
     @classmethod
     def factory(cls, name: str, *args, **kwargs) -> 'Database':
         """
@@ -77,3 +106,15 @@ class Database:
         """
         database_types = {cls.__name__:cls for cls in Database.__subclasses__()}
         return database_types[name](*args, **kwargs)
+
+    @abstractmethod
+    def get_users(self, page: int, users_per_page: int) -> Tuple[List[SerializedUser], int]:
+        """
+        Get a list of users paginated
+            if there are no more pages returns a NoMoreUsers exception
+
+        :param page: the page to return
+        :param users_per_page: the quantity of users per page
+        :return: a list of serialized users and the quantity of pages
+        """
+

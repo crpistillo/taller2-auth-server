@@ -11,7 +11,7 @@ fileConfig('config/logging_conf.ini')
 
 DEFAULT_CONFIG_FILE = "config/default_conf.yml"
 SWAGGER_URL = "/swagger"
-API_URL = "/static/swagger.json"
+API_URL = "/static/swagger.yaml"
 
 
 def create_application(config_path: Optional[str] = None, return_controller: Optional[bool] = False):
@@ -33,10 +33,6 @@ def create_application(config_path: Optional[str] = None, return_controller: Opt
 
 def create_application_with_controller(controller: Controller):
     app = Flask(__name__)
-    # Swagger UI
-    @app.route('/static/<path:path>')
-    def send_static(path):
-        return send_from_directory("static", path)
 
     swaggerui_blueprint = get_swaggerui_blueprint(SWAGGER_URL, API_URL,
                                                   config= {"app_name": "Chotuve Auth Server"})
@@ -47,6 +43,7 @@ def create_application_with_controller(controller: Controller):
                                 "/user/recover_password": {"origins": "*"},
                                 "/user/new_password": {"origins": "*"},
                                 "/user/login": {"origins": "*"},
+                                "/registered_users": {"origins": "*"},
                                 "/health": {"origins": "*"}})
 
     app.add_url_rule('/health', 'api_health', controller.api_health)
@@ -60,4 +57,13 @@ def create_application_with_controller(controller: Controller):
                      methods=["POST"])
     app.add_url_rule('/user', 'users_profile_query',
                      controller.users_profile_query, methods=['GET'])
+    app.add_url_rule('/user', 'users_profile_update', controller.users_profile_update,
+                     methods=["PUT"])
+    app.add_url_rule('/user', 'users_delete', controller.users_delete,
+                     methods=["DELETE"])
+    app.add_url_rule('/registered_users', 'registered_users', controller.registered_users,
+                     methods=["GET"])
+
+
+
     return app

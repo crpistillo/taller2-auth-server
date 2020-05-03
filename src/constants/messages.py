@@ -14,3 +14,4 @@ USER_RECOVERY_TOKEN_NOT_FOUND_MESSAGE = "User recovery token with email %s not f
 USER_NOT_AUTHORIZED_ERROR = "User not authorized to perform that action"
 ERROR_JSON = '{"status": "Error", "message": "%s"}'
 SUCCESS_JSON = '{"status": "Success", "message": "OK"}'
+INVALID_PAGE_ACCESS_ERROR = "Invalid acces to page %s of %s existent pages"

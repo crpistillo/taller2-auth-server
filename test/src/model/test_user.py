@@ -17,3 +17,10 @@ class TestUnitsSecuredPassword(unittest.TestCase):
         with self.assertRaises(InvalidPhoneNumberError):
             User(email="giancafferata@hotmail.com", phone_number="asd", fullname="Pepito",
                  photo="", secured_password=self.secured_password)
+
+    def testPhoneValidationOnChange(self):
+        valid_user = User(email="giancafferata@hotmail.com",
+                          phone_number="+54 9 11 1111-1111", fullname="Pepito",
+                          photo="", secured_password=self.secured_password)
+        with self.assertRaises(InvalidPhoneNumberError):
+            valid_user.set_phone_number("asd")

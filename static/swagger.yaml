@@ -1,0 +1,250 @@
+openapi: 3.0.1
+info:
+  title: Chotuve auth server
+  description: The auth server of Chotuve
+  version: 1.0.0
+servers:
+- url: /
+tags:
+- name: user
+  description: Operations with user
+paths:
+  /user:
+    get:
+      tags:
+      - user
+      summary: Query users
+      description: Queries all the user information
+      parameters:
+      - name: email
+        in: query
+        description: The user name for login
+        required: true
+        schema:
+          type: string
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        401:
+          description: Access token is missing or invalid
+          content: {}
+        403:
+          description: Forbidden querying that profile
+          content: {}
+        404:
+          description: User not found
+          content: {}
+    put:
+      tags:
+      - user
+      summary: Update users profile
+      description: Updates the data of the user
+      requestBody:
+        description: The user data to be updated
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Successful operation
+          content: {}
+        400:
+          description: Invalid or missing fields or the message is not a json
+          content: {}
+        401:
+          description: Access token is missing or invalid
+          content: {}
+        403:
+          description: Not authorized
+          content: {}
+      x-codegen-request-body-name: body
+    post:
+      tags:
+      - user
+      summary: Create user
+      description: Creates an user
+      requestBody:
+        description: Created user object
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      responses:
+        200:
+          description: Successful operation
+          content: {}
+        400:
+          description: User already created, invalid or missing fields or the message
+            is not a json
+          content: {}
+        403:
+          description: Not authorized
+          content: {}
+      x-codegen-request-body-name: body
+    delete:
+      tags:
+      - user
+      summary: Deletes an user from database
+      description: Removes all user data from database
+      parameters:
+      - name: email
+        in: query
+        description: The email of the user to be deleted
+        required: true
+        schema:
+          type: string
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Successful operation
+          content: {}
+        400:
+          description: Invalid or missing fields or the message is not a json
+          content: {}
+        401:
+          description: Access token is missing or invalid
+          content: {}
+        403:
+          description: Not authorized
+          content: {}
+        404:
+          description: User not found
+          content: {}
+  /user/login:
+    post:
+      tags:
+      - user
+      summary: Login
+      description: Logins a user
+      requestBody:
+        description: Login with a user
+        content:
+          '*/*':
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+        required: true
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  login_token:
+                    type: string
+        400:
+          description: Missing fields or not a JSON
+          content: {}
+        403:
+          description: Invalid credentials
+          content: {}
+        404:
+          description: User not found
+          content: {}
+      x-codegen-request-body-name: body
+  /user/recover_password:
+    post:
+      tags:
+      - user
+      summary: Recover password
+      description: Sends an email to the user with the token required to recover the
+        password
+      requestBody:
+        description: Sends an email to the user with the token required to recover
+          the password
+        content:
+          '*/*':
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+        required: true
+      responses:
+        200:
+          description: Successful operation
+          content: {}
+        400:
+          description: Invalid password
+          content: {}
+        403:
+          description: Not authorized
+          content: {}
+        404:
+          description: User not found
+          content: {}
+      x-codegen-request-body-name: body
+  /user/new_password:
+    post:
+      tags:
+      - user
+      summary: Set new password
+      description: Sets a new password using a recovery token
+      requestBody:
+        description: Sets a new password using a recovery token
+        content:
+          '*/*':
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                token:
+                  type: string
+                new_password:
+                  type: string
+        required: true
+      responses:
+        200:
+          description: Successful operation
+          content: {}
+        400:
+          description: Body is not a JSON, missing fields, token does not exists or
+            the token is not valid for the user
+          content: {}
+        403:
+          description: Not authorized
+          content: {}
+        404:
+          description: User not found
+          content: {}
+      x-codegen-request-body-name: body
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    User:
+      type: object
+      properties:
+        email:
+          type: string
+        fullname:
+          type: string
+        password:
+          type: string
+        phone_number:
+          type: string
+        photo:
+          type: string
+      xml:
+        name: User

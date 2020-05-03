@@ -1,16 +1,18 @@
-import hashlib
-from typing import NoReturn, Dict
+from typing import NoReturn, Dict, List, Tuple
 from src.model.user import User
 from src.model.user_recovery_token import UserRecoveryToken
 from src.database.database import Database
+from src.model.secured_password import SecuredPassword
 from src.database.serialized.serialized_user import SerializedUser
 from src.database.serialized.serialized_user_recovery_token import SerializedUserRecoveryToken
 from src.database.exceptions.user_not_found_error import UserNotFoundError
 from src.database.exceptions.user_recovery_token_not_found_error import UserRecoveryTokenNotFoundError
-from src.model.secured_password import SecuredPassword
 from src.database.exceptions.invalid_login_token import InvalidLoginToken
+from src.database.exceptions.no_more_users import NoMoreUsers
 import logging
 import hashlib
+from operator import itemgetter
+import math
 
 class RamDatabase(Database):
     """
@@ -98,7 +100,6 @@ class RamDatabase(Database):
         :param email: the email to search the user
         :return: an UserRecoveryToken object
         """
-
         if email not in self.serialized_user_recovery_tokens:
             raise UserRecoveryTokenNotFoundError
         self.logger.debug("Loading user_recovery_token with email %s" % email)
@@ -106,3 +107,32 @@ class RamDatabase(Database):
         return UserRecoveryToken(email=serialized_user_recovery_token.email, token=serialized_user_recovery_token.token,
                                  timestamp=serialized_user_recovery_token.timestamp)
 
+    def delete_user(self, email: str) -> NoReturn:
+        """
+        Removes all user data from database
+
+        :param email: the email of the user to be deleted
+        """
+        self.logger.debug("Deleting user with email %s" % email)
+        if email in self.serialized_user_recovery_tokens:
+            del self.serialized_user_recovery_tokens[email]
+        del self.serialized_users[email]
+
+    def get_users(self, page: int, users_per_page: int) -> Tuple[List[SerializedUser], int]:
+        """
+        Get a list of users paginated
+            if there are no more pages returns a NoMoreUsers exception
+
+        :param page: the page to return
+        :param users_per_page: the quantity of users per page
+        :return: a list of serialized users and the quantity of pages
+        """
+        if len(self.serialized_users) == 0:
+            return [], 0
+        pages = math.ceil(len(self.serialized_users) / users_per_page)
+        if pages <= page:
+            raise NoMoreUsers
+        start = page*users_per_page
+        end = start + users_per_page
+        list_of_users = sorted(list(self.serialized_users.values()), key=lambda x: x.email)
+        return list_of_users[start:end], pages

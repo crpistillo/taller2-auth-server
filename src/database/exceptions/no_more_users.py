@@ -1,0 +1,2 @@
+class NoMoreUsers(StopIteration):
+    pass
