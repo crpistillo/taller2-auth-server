@@ -60,6 +60,9 @@ def create_application_with_controller(controller: Controller):
                      methods=["PUT"])
     app.add_url_rule('/user', 'users_delete', controller.users_delete,
                      methods=["DELETE"])
+    app.add_url_rule('/registered_users', 'registered_users', controller.registered_users,
+                     methods=["GET"])
+
 
 
     return app

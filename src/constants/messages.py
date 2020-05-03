@@ -13,3 +13,4 @@ INVALID_TOKEN_MESSAGE = "Invalid token for user with email %s"
 USER_RECOVERY_TOKEN_NOT_FOUND_MESSAGE = "User recovery token with email %s not found in the database"
 ERROR_JSON = '{"status": "Error", "message": "%s"}'
 SUCCESS_JSON = '{"status": "Success", "message": "OK"}'
+INVALID_PAGE_ACCESS_ERROR = "Invalid acces to page %s of %s existent pages"

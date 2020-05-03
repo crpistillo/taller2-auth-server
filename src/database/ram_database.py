@@ -1,13 +1,12 @@
-import hashlib
 from typing import NoReturn, Dict
 from src.model.user import User
 from src.model.user_recovery_token import UserRecoveryToken
 from src.database.database import Database
+from src.model.secured_password import SecuredPassword
 from src.database.serialized.serialized_user import SerializedUser
 from src.database.serialized.serialized_user_recovery_token import SerializedUserRecoveryToken
 from src.database.exceptions.user_not_found_error import UserNotFoundError
 from src.database.exceptions.user_recovery_token_not_found_error import UserRecoveryTokenNotFoundError
-from src.model.secured_password import SecuredPassword
 from src.database.exceptions.invalid_login_token import InvalidLoginToken
 import logging
 import hashlib
@@ -112,19 +111,13 @@ class RamDatabase(Database):
         :param email: the email of the user to be deleted
         """
         self.logger.debug("Deleting user with email %s" % email)
-        if(email in self.serialized_user_recovery_tokens):
+        if email in self.serialized_user_recovery_tokens:
             del self.serialized_user_recovery_tokens[email]
         del self.serialized_users[email]
 
-    def update_user(self, user: User, update_data) -> NoReturn:
+    def users_quantity(self):
+        return len(self.serialized_users)
 
-        if "password" in update_data:
-            user.set_password(SecuredPassword.from_raw_password(update_data["password"]))
-        if "fullname" in update_data:
-            user.set_fullname(update_data["fullname"])
-        if "phone_number" in update_data:
-            user.set_phone_number(update_data["phone_number"])
-        if "photo" in update_data:
-            user.set_photo(update_data["photo"])
+    def get_users(self):
+        return self.serialized_users
 
-        self.save_user(user)

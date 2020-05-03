@@ -2,6 +2,7 @@ from typing import NoReturn
 from src.model.user import User
 from abc import abstractmethod
 from src.model.user_recovery_token import UserRecoveryToken
+from src.model.secured_password import SecuredPassword
 
 class Database:
     """
@@ -67,7 +68,7 @@ class Database:
         :return: the user associated
         """
 
-    @classmethod
+    @abstractmethod
     def delete_user(self, email: str) -> NoReturn:
         """
         Removes all user data from database
@@ -75,11 +76,17 @@ class Database:
         :param email: the email of the user to be deleted
         """
 
-    @classmethod
     def update_user(self, user: User, update_data) -> NoReturn:
-        """
+        if "password" in update_data:
+            user.set_password(SecuredPassword.from_raw_password(update_data["password"]))
+        if "fullname" in update_data:
+            user.set_fullname(update_data["fullname"])
+        if "phone_number" in update_data:
+            user.set_phone_number(update_data["phone_number"])
+        if "photo" in update_data:
+            user.set_photo(update_data["photo"])
 
-        """
+        self.save_user(user)
 
     @classmethod
     def factory(cls, name: str, *args, **kwargs) -> 'Database':
@@ -91,3 +98,12 @@ class Database:
         """
         database_types = {cls.__name__:cls for cls in Database.__subclasses__()}
         return database_types[name](*args, **kwargs)
+
+    @abstractmethod
+    def users_quantity(self):
+        return len(self.serialized_users)
+
+    @abstractmethod
+    def get_users(self):
+        return self.serialized_users
+
