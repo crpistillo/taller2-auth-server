@@ -14,7 +14,6 @@ from src.model.user_recovery_token import UserRecoveryToken
 from .services.email import EmailService
 from flask_cors import cross_origin
 import math
-from operator import itemgetter
 
 RECOVERY_TOKEN_SECRET = "dummy"
 LOGIN_MANDATORY_FIELDS = {"email", "password"}
@@ -224,6 +223,7 @@ class Controller:
         """
         Handles the return of all registered users
         return: a json with a list of dictionaries with the registered users data
+                for the required page with a fixed users_per_page value
         """
         users_per_page = int(request.args.get('users_per_page'))
         page = int(request.args.get('page'))
@@ -235,11 +235,8 @@ class Controller:
             self.logger.debug(messages.INVALID_PAGE_ACCESS_ERROR % (page.__str__(), pages.__str__()))
             return messages.ERROR_JSON % (messages.INVALID_PAGE_ACCESS_ERROR % (page.__str__(), pages.__str__())), 400
         registered_users = {}
-        users = self.database.get_users()
-        start = (page-1)*users_per_page
-        end = start + users_per_page
-        list_of_users = sorted(list(users.values()), key=itemgetter(0))
-        registered_users["results"] = list_of_users[start:end]
+        users = self.database.get_users(page, users_per_page)
+        registered_users["results"] = users
         return registered_users
 
     @cross_origin()

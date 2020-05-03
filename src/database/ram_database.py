@@ -1,4 +1,4 @@
-from typing import NoReturn, Dict
+from typing import NoReturn, Dict, List
 from src.model.user import User
 from src.model.user_recovery_token import UserRecoveryToken
 from src.database.database import Database
@@ -10,6 +10,7 @@ from src.database.exceptions.user_recovery_token_not_found_error import UserReco
 from src.database.exceptions.invalid_login_token import InvalidLoginToken
 import logging
 import hashlib
+from operator import itemgetter
 
 class RamDatabase(Database):
     """
@@ -115,9 +116,15 @@ class RamDatabase(Database):
             del self.serialized_user_recovery_tokens[email]
         del self.serialized_users[email]
 
-    def users_quantity(self):
+    def users_quantity(self) -> int:
+        """
+        return: the quantity of registered users in the database
+        """
         return len(self.serialized_users)
 
-    def get_users(self):
-        return self.serialized_users
+    def get_users(self, page: int, users_per_page: int) -> List[SerializedUser]:
+        start = (page-1)*users_per_page
+        end = start + users_per_page
+        list_of_users = sorted(list(self.serialized_users.values()), key=itemgetter(0))
+        return list_of_users[start:end]
 

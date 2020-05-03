@@ -101,9 +101,14 @@ class Database:
 
     @abstractmethod
     def users_quantity(self):
-        return len(self.serialized_users)
+        """
+        return: the quantity of registered users in the database
+        """
 
     @abstractmethod
-    def get_users(self):
-        return self.serialized_users
+    def get_users(self, page: int, users_per_page: int):
+        """
+        return: a list of dictionaries with the registered users data
+                for the required page with a fixed users_per_page value
+        """
 
