@@ -11,7 +11,7 @@ fileConfig('config/logging_conf.ini')
 
 DEFAULT_CONFIG_FILE = "config/default_conf.yml"
 SWAGGER_URL = "/swagger"
-API_URL = "/static/swagger.json"
+API_URL = "/static/swagger.yaml"
 
 
 def create_application(config_path: Optional[str] = None, return_controller: Optional[bool] = False):
