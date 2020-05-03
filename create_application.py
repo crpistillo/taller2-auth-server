@@ -43,6 +43,7 @@ def create_application_with_controller(controller: Controller):
                                 "/user/recover_password": {"origins": "*"},
                                 "/user/new_password": {"origins": "*"},
                                 "/user/login": {"origins": "*"},
+                                "/registered_users": {"origins": "*"},
                                 "/health": {"origins": "*"}})
 
     app.add_url_rule('/health', 'api_health', controller.api_health)

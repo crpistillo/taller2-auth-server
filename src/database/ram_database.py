@@ -125,12 +125,14 @@ class RamDatabase(Database):
 
         :param page: the page to return
         :param users_per_page: the quantity of users per page
-        :return: a list of serialized users and the last page number
+        :return: a list of serialized users and the quantity of pages
         """
+        if len(self.serialized_users) == 0:
+            return [], 0
         pages = math.ceil(len(self.serialized_users) / users_per_page)
-        if pages < page:
+        if pages <= page:
             raise NoMoreUsers
-        start = (page-1)*users_per_page
+        start = page*users_per_page
         end = start + users_per_page
         list_of_users = sorted(list(self.serialized_users.values()), key=lambda x: x.email)
         return list_of_users[start:end], pages

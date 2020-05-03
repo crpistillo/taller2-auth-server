@@ -115,6 +115,6 @@ class Database:
 
         :param page: the page to return
         :param users_per_page: the quantity of users per page
-        :return: a list of serialized users and the last page number
+        :return: a list of serialized users and the quantity of pages
         """
 

@@ -255,9 +255,10 @@ class Controller:
         return: a json with a list of dictionaries with the registered users data
                 for the required page with a fixed users_per_page value
         """
-        users_per_page = int(request.args.get('users_per_page'))
-        page = int(request.args.get('page'))
-        if not (users_per_page and page):
+        try:
+            users_per_page = int(request.args.get('users_per_page'))
+            page = int(request.args.get('page'))
+        except TypeError:
             self.logger.debug(messages.MISSING_FIELDS_ERROR)
             return messages.ERROR_JSON % messages.MISSING_FIELDS_ERROR, 400
         try:
@@ -267,7 +268,8 @@ class Controller:
             return messages.ERROR_JSON % (messages.INVALID_PAGE_ACCESS_ERROR % (page.__str__(), pages.__str__())), 400
         registered_users = {"results": [{k: v for k, v in user._asdict().items()
                                          if k != "password"}
-                                        for user in users]}
+                                        for user in users],
+                            "pages": pages}
         return json.dumps(registered_users)
 
     @cross_origin()
