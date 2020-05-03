@@ -11,6 +11,7 @@ from src.model.exceptions.invalid_phone_number_error import InvalidPhoneNumberEr
 from src.model.exceptions.invalid_email_error import InvalidEmailError
 from src.database.serialized.serialized_user import SerializedUser
 from src.database.exceptions.invalid_login_token import InvalidLoginToken
+from src.database.exceptions.no_more_users import NoMoreUsers
 from flask import request
 from src.model.user_recovery_token import UserRecoveryToken
 from .services.email import EmailService
@@ -18,8 +19,6 @@ from flask_cors import cross_origin
 from flask_httpauth import HTTPTokenAuth
 
 auth = HTTPTokenAuth(scheme='Bearer')
-
-import math
 
 RECOVERY_TOKEN_SECRET = "dummy"
 LOGIN_MANDATORY_FIELDS = {"email", "password"}
@@ -261,15 +260,14 @@ class Controller:
         if not (users_per_page and page):
             self.logger.debug(messages.MISSING_FIELDS_ERROR)
             return messages.ERROR_JSON % messages.MISSING_FIELDS_ERROR, 400
-        pages = math.ceil(self.database.users_quantity()/users_per_page)
-        if pages < page:
+        try:
+            users, pages = self.database.get_users(page, users_per_page)
+        except NoMoreUsers:
             self.logger.debug(messages.INVALID_PAGE_ACCESS_ERROR % (page.__str__(), pages.__str__()))
             return messages.ERROR_JSON % (messages.INVALID_PAGE_ACCESS_ERROR % (page.__str__(), pages.__str__())), 400
-        registered_users = {}
-        users = self.database.get_users(page, users_per_page)
-        registered_users["results"] = [{k: v for k, v in user._asdict().items()
-                                        if k != "password"}
-                                       for user in users]
+        registered_users = {"results": [{k: v for k, v in user._asdict().items()
+                                         if k != "password"}
+                                        for user in users]}
         return json.dumps(registered_users)
 
     @cross_origin()

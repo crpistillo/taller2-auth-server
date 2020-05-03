@@ -1,4 +1,4 @@
-from typing import NoReturn
+from typing import NoReturn, Tuple
 from src.model.user import User
 from abc import abstractmethod
 from src.model.user_recovery_token import UserRecoveryToken
@@ -108,18 +108,13 @@ class Database:
         return database_types[name](*args, **kwargs)
 
     @abstractmethod
-    def users_quantity(self):
-        """
-        return: the quantity of registered users in the database
-        """
-
-    @abstractmethod
-    def get_users(self, page: int, users_per_page: int) -> List[SerializedUser]:
+    def get_users(self, page: int, users_per_page: int) -> Tuple[List[SerializedUser], int]:
         """
         Get a list of users paginated
+            if there are no more pages returns a NoMoreUsers exception
 
         :param page: the page to return
-        :param users_per_page: the queantity of users per page
-        :return: a list of serialized users
+        :param users_per_page: the quantity of users per page
+        :return: a list of serialized users and the last page number
         """
 

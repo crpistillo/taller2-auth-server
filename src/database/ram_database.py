@@ -1,4 +1,4 @@
-from typing import NoReturn, Dict, List
+from typing import NoReturn, Dict, List, Tuple
 from src.model.user import User
 from src.model.user_recovery_token import UserRecoveryToken
 from src.database.database import Database
@@ -8,9 +8,11 @@ from src.database.serialized.serialized_user_recovery_token import SerializedUse
 from src.database.exceptions.user_not_found_error import UserNotFoundError
 from src.database.exceptions.user_recovery_token_not_found_error import UserRecoveryTokenNotFoundError
 from src.database.exceptions.invalid_login_token import InvalidLoginToken
+from src.database.exceptions.no_more_users import NoMoreUsers
 import logging
 import hashlib
 from operator import itemgetter
+import math
 
 class RamDatabase(Database):
     """
@@ -116,21 +118,19 @@ class RamDatabase(Database):
             del self.serialized_user_recovery_tokens[email]
         del self.serialized_users[email]
 
-    def users_quantity(self) -> int:
-        """
-        return: the quantity of registered users in the database
-        """
-        return len(self.serialized_users)
-
-    def get_users(self, page: int, users_per_page: int) -> List[SerializedUser]:
+    def get_users(self, page: int, users_per_page: int) -> Tuple[List[SerializedUser], int]:
         """
         Get a list of users paginated
+            if there are no more pages returns a NoMoreUsers exception
 
         :param page: the page to return
-        :param users_per_page: the queantity of users per page
-        :return: a list of serialized users
+        :param users_per_page: the quantity of users per page
+        :return: a list of serialized users and the last page number
         """
+        pages = math.ceil(len(self.serialized_users) / users_per_page)
+        if pages < page:
+            raise NoMoreUsers
         start = (page-1)*users_per_page
         end = start + users_per_page
         list_of_users = sorted(list(self.serialized_users.values()), key=lambda x: x.email)
-        return list_of_users[start:end]
+        return list_of_users[start:end], pages
