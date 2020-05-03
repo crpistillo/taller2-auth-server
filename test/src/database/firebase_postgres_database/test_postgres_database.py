@@ -8,7 +8,6 @@ from src.database.exceptions.user_recovery_token_not_found_error import UserReco
 import pytest
 import firebase_admin
 from typing import NamedTuple
-import os
 
 test_user = User(email="giancafferata@hotmail.com", fullname="Gianmarco Cafferata",
                  phone_number="11 1111-1111", photo="", secured_password=SecuredPassword.from_raw_password("password"))
