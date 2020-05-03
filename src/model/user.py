@@ -55,7 +55,8 @@ class User:
         self.fullname = fullname
 
     def set_phone_number(self, phone_number: str):
-        # TODO: validate phone number
+        if not re.fullmatch(PHONE_NUMBER_REGEX, phone_number, re.IGNORECASE):
+            raise InvalidPhoneNumberError
         self.phone_number = phone_number
 
     def set_photo(self, photo: str):
