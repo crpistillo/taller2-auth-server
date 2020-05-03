@@ -115,16 +115,3 @@ class RamDatabase(Database):
         if(email in self.serialized_user_recovery_tokens):
             del self.serialized_user_recovery_tokens[email]
         del self.serialized_users[email]
-
-    def update_user(self, user: User, update_data) -> NoReturn:
-
-        if "password" in update_data:
-            user.set_password(SecuredPassword.from_raw_password(update_data["password"]))
-        if "fullname" in update_data:
-            user.set_fullname(update_data["fullname"])
-        if "phone_number" in update_data:
-            user.set_phone_number(update_data["phone_number"])
-        if "photo" in update_data:
-            user.set_photo(update_data["photo"])
-
-        self.save_user(user)

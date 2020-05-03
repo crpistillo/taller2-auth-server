@@ -30,6 +30,7 @@ def postgres_firebase_database(monkeypatch, postgresql):
     monkeypatch.setattr(firebase_admin.auth, "create_user", mockreturn)
     monkeypatch.setattr(firebase_admin.auth, "get_user_by_email", mock_get_user_by_email)
     monkeypatch.setattr(firebase_admin.auth, "verify_id_token", mockreturn)
+    monkeypatch.setattr(firebase_admin.auth, "delete_user", mockreturn)
     PostgresFirebaseDatabase.__init__ = mockreturn
     PostgresFirebaseDatabase.sign_in_with_email_and_password = mock_sign_in
     database = PostgresFirebaseDatabase()
@@ -63,3 +64,18 @@ def test_get_recovery_token(postgres_firebase_database):
     token = postgres_firebase_database.search_user_recovery_token("giancafferata@hotmail.com")
     assert token.get_email() == "giancafferata@hotmail.com"
     assert token.get_token() == "token"
+
+def test_delete_user(postgres_firebase_database):
+    postgres_firebase_database.save_user(test_user)
+    user = postgres_firebase_database.search_user("giancafferata@hotmail.com")
+    assert user.get_email() == "giancafferata@hotmail.com"
+    assert user.get_secured_password_string() == test_user.get_secured_password_string()
+    postgres_firebase_database.delete_user("giancafferata@hotmail.com")
+    with pytest.raises(UserNotFoundError):
+        postgres_firebase_database.search_user("giancafferata@hotmail.com")
+
+def test_update_user(postgres_firebase_database):
+    postgres_firebase_database.save_user(test_user)
+    postgres_firebase_database.update_user(test_user, {"password": "asd123"})
+    user = postgres_firebase_database.search_user("giancafferata@hotmail.com")
+    assert user.get_secured_password_string() == SecuredPassword.from_raw_password("asd123").serialize()

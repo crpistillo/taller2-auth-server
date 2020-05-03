@@ -2,6 +2,7 @@ from typing import NoReturn
 from src.model.user import User
 from abc import abstractmethod
 from src.model.user_recovery_token import UserRecoveryToken
+from src.model.secured_password import SecuredPassword
 
 class Database:
     """
@@ -75,11 +76,23 @@ class Database:
         :param email: the email of the user to be deleted
         """
 
-    @classmethod
     def update_user(self, user: User, update_data) -> NoReturn:
         """
+        Updates a user
 
+        :param user: the user to update
+        :param update_data: the parameters to update
         """
+        if "password" in update_data:
+            user.set_password(SecuredPassword.from_raw_password(update_data["password"]))
+        if "fullname" in update_data:
+            user.set_fullname(update_data["fullname"])
+        if "phone_number" in update_data:
+            user.set_phone_number(update_data["phone_number"])
+        if "photo" in update_data:
+            user.set_photo(update_data["photo"])
+
+        self.save_user(user)
 
     @classmethod
     def factory(cls, name: str, *args, **kwargs) -> 'Database':
