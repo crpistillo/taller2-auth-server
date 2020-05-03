@@ -23,6 +23,9 @@ class TestEmailService(unittest.TestCase):
                                           sendgrid_email_env_name="SENDGRID_EMAIL")
         self.email_service.send_recovery_email(self.test_user, self.recovery_token)
         mock_sendgrid_send.assert_called()
+        args = mock_sendgrid_send.call_args_list
+        self.assertEqual(len(args), 1)
+        self.assertEqual(args[0][0][0].get()["from"]["email"], "asd@asd.com")
 
     @mock.patch('sendgrid.SendGridAPIClient.send')
     def test_invalid_envs_wont_send(self, mock_sendgrid_send):
