@@ -3,6 +3,8 @@ from src.model.user import User
 from abc import abstractmethod
 from src.model.user_recovery_token import UserRecoveryToken
 from src.model.secured_password import SecuredPassword
+from src.database.serialized.serialized_user import SerializedUser
+from typing import List
 
 class Database:
     """
@@ -106,9 +108,12 @@ class Database:
         """
 
     @abstractmethod
-    def get_users(self, page: int, users_per_page: int):
+    def get_users(self, page: int, users_per_page: int) -> List[SerializedUser]:
         """
-        return: a list of dictionaries with the registered users data
-                for the required page with a fixed users_per_page value
+        Get a list of users paginated
+
+        :param page: the page to return
+        :param users_per_page: the queantity of users per page
+        :return: a list of serialized users
         """
 

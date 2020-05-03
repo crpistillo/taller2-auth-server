@@ -123,8 +123,15 @@ class RamDatabase(Database):
         return len(self.serialized_users)
 
     def get_users(self, page: int, users_per_page: int) -> List[SerializedUser]:
+        """
+        Get a list of users paginated
+
+        :param page: the page to return
+        :param users_per_page: the queantity of users per page
+        :return: a list of serialized users
+        """
         start = (page-1)*users_per_page
         end = start + users_per_page
-        list_of_users = sorted(list(self.serialized_users.values()), key=itemgetter(0))
+        list_of_users = sorted(list(self.serialized_users.values()), key=lambda x: x.email)
         return list_of_users[start:end]
 
