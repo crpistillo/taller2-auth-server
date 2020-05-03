@@ -33,3 +33,13 @@ class TestEmailService(unittest.TestCase):
                                           sendgrid_email_env_name="NOT_SETTED_ENV_VARIABLE")
         self.email_service.send_recovery_email(self.test_user, self.recovery_token)
         mock_sendgrid_send.assert_not_called()
+
+    @mock.patch('sendgrid.SendGridAPIClient.send')
+    def test_exception(self, mock_sendgrid_send):
+        os.environ["SENDGRID_API_KEY"] = "dummy"
+        os.environ["SENDGRID_EMAIL"] = "asd@asd.com"
+        mock_sendgrid_send.side_effect = Exception()
+        self.email_service = EmailService(sendgrid_api_key_env_name="SENDGRID_API_KEY",
+                                          sendgrid_email_env_name="SENDGRID_EMAIL")
+        self.email_service.send_recovery_email(self.test_user, self.recovery_token)
+        mock_sendgrid_send.assert_called()
