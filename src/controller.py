@@ -182,12 +182,12 @@ class Controller:
         :return: a json with the data of the requested user on success or an error in another case
         """
         email_query = request.args.get('email')
-        if email_query != auth.current_user().get_email() and not auth.current_user().is_admin():
-            self.logger.debug(messages.USER_NOT_AUTHORIZED_ERROR)
-            return messages.ERROR_JSON % messages.USER_NOT_AUTHORIZED_ERROR, 403
         if not email_query:
             self.logger.debug(messages.MISSING_FIELDS_ERROR)
             return messages.ERROR_JSON % messages.MISSING_FIELDS_ERROR, 400
+        if email_query != auth.current_user().get_email() and not auth.current_user().is_admin():
+            self.logger.debug(messages.USER_NOT_AUTHORIZED_ERROR)
+            return messages.ERROR_JSON % messages.USER_NOT_AUTHORIZED_ERROR, 403
         try:
             user = self.database.search_user(email_query)
         except UserNotFoundError:
@@ -198,6 +198,7 @@ class Controller:
         return json.dumps(serialized_user_dic)
 
     @cross_origin()
+    @auth.login_required
     def users_profile_update(self):
         """
         Handles updating a user's profile
@@ -207,6 +208,9 @@ class Controller:
         if not email_query:
             self.logger.debug(messages.MISSING_FIELDS_ERROR)
             return messages.ERROR_JSON % messages.MISSING_FIELDS_ERROR, 400
+        if email_query != auth.current_user().get_email() and not auth.current_user().is_admin():
+            self.logger.debug(messages.USER_NOT_AUTHORIZED_ERROR)
+            return messages.ERROR_JSON % messages.USER_NOT_AUTHORIZED_ERROR, 403
         try:
             assert request.is_json
         except AssertionError:
@@ -223,6 +227,7 @@ class Controller:
 
 
     @cross_origin()
+    @auth.login_required
     def users_delete(self):
         """
         Handles the delete of an user
@@ -232,6 +237,9 @@ class Controller:
         if not email_query:
             self.logger.debug(messages.MISSING_FIELDS_ERROR)
             return messages.ERROR_JSON % messages.MISSING_FIELDS_ERROR, 400
+        if email_query != auth.current_user().get_email() and not auth.current_user().is_admin():
+            self.logger.debug(messages.USER_NOT_AUTHORIZED_ERROR)
+            return messages.ERROR_JSON % messages.USER_NOT_AUTHORIZED_ERROR, 403
         try:
             self.database.search_user(email_query)
         except UserNotFoundError:

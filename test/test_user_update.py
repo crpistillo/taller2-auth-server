@@ -5,7 +5,7 @@ import unittest
 import json
 from src.model.secured_password import SecuredPassword
 
-class TestUserRegistration(unittest.TestCase):
+class TestUserUpdate(unittest.TestCase):
     def setUp(self) -> None:
         self.app, self.controller = create_application(return_controller=True)
         admin_user = User(email="admin@admin.com", fullname="Admin",
@@ -14,22 +14,35 @@ class TestUserRegistration(unittest.TestCase):
                           admin=True)
         self.controller.database.save_user(admin_user)
         self.app.testing = True
+        with self.app.test_client() as c:
+            response = c.post('/user/login', data='{"email":"admin@admin.com", "password":"admin"}',
+                              headers={"Content-Type": "application/json"})
+            self.admin_token = json.loads(response.data)["login_token"]
+
+    def test_user_update_without_authentication(self):
+        with self.app.test_client() as c:
+            response = c.put('/user', query_string={"email": "caropistillo@gmail.com"}, data='')
+            self.assertEqual(response.status_code, 401)
 
     def test_user_update_no_json(self):
         with self.app.test_client() as c:
-            response = c.put('/user', query_string={"email": "caropistillo@gmail.com"}, data='')
+            response = c.put('/user', query_string={"email": "caropistillo@gmail.com"}, data='',
+                             headers={"Authorization": "Bearer %s" % self.admin_token})
             self.assertEqual(response.status_code, 400)
 
     def test_user_update_for_missing_fields_error(self):
         with self.app.test_client() as c:
-            response = c.put('/user', query_string={"fullname": "Carolina"})
+            response = c.put('/user', query_string={"fullname": "Carolina"},
+                             headers={"Authorization": "Bearer %s" % self.admin_token})
             self.assertEqual(response.status_code, 400)
 
     def test_user_update_for_non_existing_user_error(self):
         with self.app.test_client() as c:
             response = c.put('/user', query_string={"email": "caropistillo@gmail.com"},
                              data='{"fullname":"Carolina Pistillo", "phone_number":"11 1111-1111", "photo":"", '
-                                '"password":"carolina"}', headers={"Content-Type": "application/json"})
+                                '"password":"carolina"}',
+                             headers={"Content-Type": "application/json",
+                                      "Authorization": "Bearer %s" % self.admin_token})
             self.assertEqual(response.status_code, 404)
 
     def test_user_update_success(self):
@@ -40,7 +53,27 @@ class TestUserRegistration(unittest.TestCase):
             self.assertEqual(response.status_code, 200)
             response = c.put('/user', query_string={"email": "caropistillo@gmail.com"},
                              data='{"fullname":"Carolina Pistillo", "phone_number":"11 3263-7625", "photo":"caro.jpg", '
-                                '"password":"carolina"}', headers={"Content-Type": "application/json"})
+                                '"password":"carolina"}',
+                             headers={"Content-Type": "application/json",
+                                      "Authorization": "Bearer %s" % self.admin_token})
+            self.assertEqual(response.status_code, 200)
+
+    def test_user_update_myself_success(self):
+        with self.app.test_client() as c:
+            response = c.post('/user', data='{"email":"caropistillo@gmail.com", "password": "carolina15", "fullname":'
+                                 '"Carolina Rocio", "phone_number":"11 1111-1111", "photo":""}',
+                                                        headers={"Content-Type": "application/json"})
+            self.assertEqual(response.status_code, 200)
+
+            response = c.post('/user/login', data='{"email":"caropistillo@gmail.com", "password":"carolina15"}',
+                              headers={"Content-Type": "application/json"})
+            my_token = json.loads(response.data)["login_token"]
+
+            response = c.put('/user', query_string={"email": "caropistillo@gmail.com"},
+                             data='{"fullname":"Carolina Pistillo", "phone_number":"11 3263-7625", "photo":"caro.jpg", '
+                                '"password":"carolina"}',
+                             headers={"Content-Type": "application/json",
+                                      "Authorization": "Bearer %s" % my_token})
             self.assertEqual(response.status_code, 200)
 
     def test_user_update_and_query(self):
@@ -51,7 +84,8 @@ class TestUserRegistration(unittest.TestCase):
             self.assertEqual(response.status_code, 200)
             response = c.put('/user', query_string={"email": "caropistillo@gmail.com"},
                              data='{"fullname":"Carolina Pistillo", "phone_number":"11 3263-7625", "photo":"caro.jpg", '
-                                '"password":"carolina"}', headers={"Content-Type": "application/json"})
+                                '"password":"carolina"}', headers={"Content-Type": "application/json",
+                                                                   "Authorization": "Bearer %s" % self.admin_token})
             self.assertEqual(response.status_code, 200)
 
             response = c.post('/user/login', data='{"email":"caropistillo@gmail.com", "password":"carolina"}',
@@ -77,7 +111,8 @@ class TestUserRegistration(unittest.TestCase):
             self.assertEqual(response.status_code, 200)
             response = c.put('/user', query_string={"email": "caropistillo@gmail.com"},
                              data='{"fullname":"Carolina Pistillo", "phone_number":"11 3263-7625", "photo":"caro.jpg", '
-                                '"password":"carolina"}', headers={"Content-Type": "application/json"})
+                                '"password":"carolina"}', headers={"Content-Type": "application/json",
+                                                                   "Authorization": "Bearer %s" % self.admin_token})
             self.assertEqual(response.status_code, 200)
             response = c.post('/user/login', data='{"email":"caropistillo@gmail.com", "password": "carolina" }',
                               headers={"Content-Type": "application/json"})
