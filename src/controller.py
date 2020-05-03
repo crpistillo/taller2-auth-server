@@ -53,7 +53,7 @@ class Controller:
     def users_login(self):
         """
         Handles the user login
-        :return: a token if the credentials are ok
+        :return: a json with the login_token on success or an error in another case
         """
         try:
             assert request.is_json
@@ -80,8 +80,9 @@ class Controller:
     @cross_origin()
     def users_recover_password(self):
         """
-        Handles the user recovering
-        :return: a token for the user to generate a new password
+        Handles the user password recovering
+        On success, it sends an email with the token for the user to generate a new password
+        :return: a json with a success message on success or an error in another case
         """
         try:
             assert request.is_json
@@ -101,12 +102,13 @@ class Controller:
         user_token = UserRecoveryToken.from_user(user, RECOVERY_TOKEN_SECRET)
         self.database.save_user_recovery_token(user_token)
         self.email_service.send_recovery_email(user, user_token)
-        return messages.SUCCESS_JSON
+        return messages.SUCCESS_JSON, 200
 
     @cross_origin()
     def users_new_password(self):
         """
         Handles the new password setting
+        :return: a json with a success message on success or an error in another case
         """
         try:
             assert request.is_json
@@ -131,7 +133,7 @@ class Controller:
             user.set_password(SecuredPassword.from_raw_password(content["new_password"]))
             self.database.save_user(user)
             self.logger.debug(messages.NEW_PASSWORD_SUCCESS_MESSAGE % content["email"])
-            return messages.SUCCESS_JSON
+            return messages.SUCCESS_JSON, 200
         else:
             self.logger.debug(messages.INVALID_TOKEN_MESSAGE % content["email"])
             return messages.ERROR_JSON % (messages.INVALID_TOKEN_MESSAGE % content["email"]), 400
@@ -140,6 +142,7 @@ class Controller:
     def users_register(self):
         """
         Handles the user registration
+        :return: a json with a success message on success or an error in another case
         """
         try:
             assert request.is_json
@@ -168,11 +171,16 @@ class Controller:
             return messages.ERROR_JSON % (messages.USER_INVALID_PHONE_ERROR_MESSAGE %
                                  (content["phone_number"], content["email"])), 400
         self.database.save_user(user)
-        return messages.SUCCESS_JSON
+        return messages.SUCCESS_JSON, 200
 
+    #TODO: que no devuelva la password
     @cross_origin()
     @auth.login_required
     def users_profile_query(self):
+        """
+        Handles the user recovering
+        :return: a json with the data of the requested user on success or an error in another case
+        """
         email_query = request.args.get('email')
         if email_query != auth.current_user().get_email() and not auth.current_user().is_admin():
             self.logger.debug(messages.USER_NOT_AUTHORIZED_ERROR)
@@ -188,6 +196,49 @@ class Controller:
 
         serialized_user_dic = SerializedUser.from_user(user)._asdict()
         return json.dumps(serialized_user_dic)
+
+    @cross_origin()
+    def users_profile_update(self):
+        """
+        Handles updating a user's profile
+        :return: a json with a success message on success or an error in another case
+        """
+        email_query = request.args.get('email')
+        if not email_query:
+            self.logger.debug(messages.MISSING_FIELDS_ERROR)
+            return messages.ERROR_JSON % messages.MISSING_FIELDS_ERROR, 400
+        try:
+            assert request.is_json
+        except AssertionError:
+            self.logger.debug(messages.REQUEST_IS_NOT_JSON)
+            return messages.ERROR_JSON % messages.REQUEST_IS_NOT_JSON, 400
+        content = request.get_json()
+        try:
+            user = self.database.search_user(email_query)
+        except UserNotFoundError:
+            self.logger.debug(messages.USER_NOT_FOUND_MESSAGE % email_query)
+            return messages.ERROR_JSON % (messages.USER_NOT_FOUND_MESSAGE % email_query), 404
+        self.database.update_user(user, content)
+        return messages.SUCCESS_JSON, 200
+
+
+    @cross_origin()
+    def users_delete(self):
+        """
+        Handles the delete of an user
+        :return: a json with a success message on success or an error in another case
+        """
+        email_query = request.args.get('email')
+        if not email_query:
+            self.logger.debug(messages.MISSING_FIELDS_ERROR)
+            return messages.ERROR_JSON % messages.MISSING_FIELDS_ERROR, 400
+        try:
+            self.database.search_user(email_query)
+        except UserNotFoundError:
+            self.logger.debug(messages.USER_NOT_FOUND_MESSAGE % email_query)
+            return messages.ERROR_JSON % (messages.USER_NOT_FOUND_MESSAGE % email_query), 404
+        self.database.delete_user(email_query)
+        return messages.SUCCESS_JSON, 200
 
     @cross_origin()
     def api_health(self):

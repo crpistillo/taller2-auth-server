@@ -68,6 +68,20 @@ class Database:
         """
 
     @classmethod
+    def delete_user(self, email: str) -> NoReturn:
+        """
+        Removes all user data from database
+
+        :param email: the email of the user to be deleted
+        """
+
+    @classmethod
+    def update_user(self, user: User, update_data) -> NoReturn:
+        """
+
+        """
+
+    @classmethod
     def factory(cls, name: str, *args, **kwargs) -> 'Database':
         """
         Factory pattern for database

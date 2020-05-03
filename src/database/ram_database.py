@@ -98,7 +98,6 @@ class RamDatabase(Database):
         :param email: the email to search the user
         :return: an UserRecoveryToken object
         """
-
         if email not in self.serialized_user_recovery_tokens:
             raise UserRecoveryTokenNotFoundError
         self.logger.debug("Loading user_recovery_token with email %s" % email)
@@ -106,3 +105,26 @@ class RamDatabase(Database):
         return UserRecoveryToken(email=serialized_user_recovery_token.email, token=serialized_user_recovery_token.token,
                                  timestamp=serialized_user_recovery_token.timestamp)
 
+    def delete_user(self, email: str) -> NoReturn:
+        """
+        Removes all user data from database
+
+        :param email: the email of the user to be deleted
+        """
+        self.logger.debug("Deleting user with email %s" % email)
+        if(email in self.serialized_user_recovery_tokens):
+            del self.serialized_user_recovery_tokens[email]
+        del self.serialized_users[email]
+
+    def update_user(self, user: User, update_data) -> NoReturn:
+
+        if "password" in update_data:
+            user.set_password(SecuredPassword.from_raw_password(update_data["password"]))
+        if "fullname" in update_data:
+            user.set_fullname(update_data["fullname"])
+        if "phone_number" in update_data:
+            user.set_phone_number(update_data["phone_number"])
+        if "photo" in update_data:
+            user.set_photo(update_data["photo"])
+
+        self.save_user(user)

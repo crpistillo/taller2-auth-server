@@ -3,6 +3,7 @@ from src.model.user import User
 from src.model.secured_password import SecuredPassword
 import unittest
 import json
+from src.model.secured_password import SecuredPassword
 
 class TestUserRegistration(unittest.TestCase):
     def setUp(self) -> None:
@@ -71,3 +72,6 @@ class TestUserRegistration(unittest.TestCase):
             self.assertEqual(response_json["email"], "giancafferata@hotmail.com")
             self.assertEqual(response_json["fullname"], "Gianmarco Cafferata")
             self.assertEqual(response_json["phone_number"], "11 1111-1111")
+            self.assertEqual(response_json["photo"], "")
+            secured_password = SecuredPassword.from_raw_password("asd123")
+            self.assertEqual(response_json["password"], secured_password.serialize())

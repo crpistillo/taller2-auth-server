@@ -51,6 +51,15 @@ class User:
     def is_admin(self):
         return self.admin
 
+    def set_fullname(self, fullname: str):
+        self.fullname = fullname
+
+    def set_phone_number(self, phone_number: str):
+        self.phone_number = phone_number
+
+    def set_photo(self, photo: str):
+        self.photo = photo
+
     def password_match(self, other: SecuredPassword) -> bool:
         """
         Responsible for comparing to SecuredPasswords
