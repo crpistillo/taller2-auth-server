@@ -3,6 +3,8 @@ from src.model.user import User
 from abc import abstractmethod
 from src.model.user_recovery_token import UserRecoveryToken
 from src.model.secured_password import SecuredPassword
+from src.database.serialized.serialized_user import SerializedUser
+from typing import List
 
 class Database:
     """
@@ -68,7 +70,7 @@ class Database:
         :return: the user associated
         """
 
-    @classmethod
+    @abstractmethod
     def delete_user(self, email: str) -> NoReturn:
         """
         Removes all user data from database
@@ -104,3 +106,20 @@ class Database:
         """
         database_types = {cls.__name__:cls for cls in Database.__subclasses__()}
         return database_types[name](*args, **kwargs)
+
+    @abstractmethod
+    def users_quantity(self):
+        """
+        return: the quantity of registered users in the database
+        """
+
+    @abstractmethod
+    def get_users(self, page: int, users_per_page: int) -> List[SerializedUser]:
+        """
+        Get a list of users paginated
+
+        :param page: the page to return
+        :param users_per_page: the queantity of users per page
+        :return: a list of serialized users
+        """
+

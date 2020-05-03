@@ -1,16 +1,16 @@
-import hashlib
-from typing import NoReturn, Dict
+from typing import NoReturn, Dict, List
 from src.model.user import User
 from src.model.user_recovery_token import UserRecoveryToken
 from src.database.database import Database
+from src.model.secured_password import SecuredPassword
 from src.database.serialized.serialized_user import SerializedUser
 from src.database.serialized.serialized_user_recovery_token import SerializedUserRecoveryToken
 from src.database.exceptions.user_not_found_error import UserNotFoundError
 from src.database.exceptions.user_recovery_token_not_found_error import UserRecoveryTokenNotFoundError
-from src.model.secured_password import SecuredPassword
 from src.database.exceptions.invalid_login_token import InvalidLoginToken
 import logging
 import hashlib
+from operator import itemgetter
 
 class RamDatabase(Database):
     """
@@ -112,6 +112,25 @@ class RamDatabase(Database):
         :param email: the email of the user to be deleted
         """
         self.logger.debug("Deleting user with email %s" % email)
-        if(email in self.serialized_user_recovery_tokens):
+        if email in self.serialized_user_recovery_tokens:
             del self.serialized_user_recovery_tokens[email]
         del self.serialized_users[email]
+
+    def users_quantity(self) -> int:
+        """
+        return: the quantity of registered users in the database
+        """
+        return len(self.serialized_users)
+
+    def get_users(self, page: int, users_per_page: int) -> List[SerializedUser]:
+        """
+        Get a list of users paginated
+
+        :param page: the page to return
+        :param users_per_page: the queantity of users per page
+        :return: a list of serialized users
+        """
+        start = (page-1)*users_per_page
+        end = start + users_per_page
+        list_of_users = sorted(list(self.serialized_users.values()), key=lambda x: x.email)
+        return list_of_users[start:end]

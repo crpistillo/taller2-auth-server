@@ -19,6 +19,8 @@ from flask_httpauth import HTTPTokenAuth
 
 auth = HTTPTokenAuth(scheme='Bearer')
 
+import math
+
 RECOVERY_TOKEN_SECRET = "dummy"
 LOGIN_MANDATORY_FIELDS = {"email", "password"}
 RECOVER_PASSWORD_MANDATORY_FIELDS = {"email"}
@@ -246,6 +248,29 @@ class Controller:
             return messages.ERROR_JSON % (messages.USER_NOT_FOUND_MESSAGE % email_query), 404
         self.database.delete_user(email_query)
         return messages.SUCCESS_JSON, 200
+
+    @cross_origin()
+    def registered_users(self):
+        """
+        Handles the return of all registered users
+        return: a json with a list of dictionaries with the registered users data
+                for the required page with a fixed users_per_page value
+        """
+        users_per_page = int(request.args.get('users_per_page'))
+        page = int(request.args.get('page'))
+        if not (users_per_page and page):
+            self.logger.debug(messages.MISSING_FIELDS_ERROR)
+            return messages.ERROR_JSON % messages.MISSING_FIELDS_ERROR, 400
+        pages = math.ceil(self.database.users_quantity()/users_per_page)
+        if pages < page:
+            self.logger.debug(messages.INVALID_PAGE_ACCESS_ERROR % (page.__str__(), pages.__str__()))
+            return messages.ERROR_JSON % (messages.INVALID_PAGE_ACCESS_ERROR % (page.__str__(), pages.__str__())), 400
+        registered_users = {}
+        users = self.database.get_users(page, users_per_page)
+        registered_users["results"] = [{k: v for k, v in user._asdict().items()
+                                        if k != "password"}
+                                       for user in users]
+        return json.dumps(registered_users)
 
     @cross_origin()
     def api_health(self):
