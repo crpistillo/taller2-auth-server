@@ -73,5 +73,3 @@ class TestUserRegistration(unittest.TestCase):
             self.assertEqual(response_json["fullname"], "Gianmarco Cafferata")
             self.assertEqual(response_json["phone_number"], "11 1111-1111")
             self.assertEqual(response_json["photo"], "")
-            secured_password = SecuredPassword.from_raw_password("asd123")
-            self.assertEqual(response_json["password"], secured_password.serialize())

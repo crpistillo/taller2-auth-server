@@ -173,7 +173,6 @@ class Controller:
         self.database.save_user(user)
         return messages.SUCCESS_JSON, 200
 
-    #TODO: que no devuelva la password
     @cross_origin()
     @auth.login_required
     def users_profile_query(self):

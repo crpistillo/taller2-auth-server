@@ -100,8 +100,6 @@ class TestUserUpdate(unittest.TestCase):
             self.assertEqual(response_json["fullname"], "Carolina Pistillo")
             self.assertEqual(response_json["phone_number"], "11 3263-7625")
             self.assertEqual(response_json["photo"], "caro.jpg")
-            secured_password = SecuredPassword.from_raw_password("carolina")
-            self.assertEqual(response_json["password"], secured_password.serialize())
 
     def test_user_update_and_login(self):
         with self.app.test_client() as c:
