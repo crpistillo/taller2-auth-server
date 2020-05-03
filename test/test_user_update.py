@@ -118,4 +118,24 @@ class TestUserUpdate(unittest.TestCase):
                               headers={"Content-Type": "application/json"})
             self.assertEqual(response.status_code, 200)
 
+    def test_update_for_other_not_allowed_error(self):
+        with self.app.test_client() as c:
+            response = c.post('/user', data='{"email":"giancafferata@hotmail.com", "fullname":"Gianmarco Cafferata", '
+                                             '"phone_number":"11 1111-1111", "photo":"", "password":"asd123"}',
+                              headers={"Content-Type": "application/json"})
+            self.assertEqual(response.status_code, 200)
+            response = c.post('/user', data='{"email":"gcafferata@fi.uba.ar", "fullname":"Gianmarco Cafferata", '
+                                             '"phone_number":"11 1111-1111", "photo":"", "password":"asd123"}',
+                              headers={"Content-Type": "application/json"})
+            self.assertEqual(response.status_code, 200)
+            response = c.post('/user/login', data='{"email":"gcafferata@fi.uba.ar", "password":"asd123"}',
+                              headers={"Content-Type": "application/json"})
+            token = json.loads(response.data)["login_token"]
+
+            response = c.put('/user', query_string={"email": "giancafferata@hotmail.com"},
+                             data='{"password":"carolina"}',
+                             headers={"Content-Type": "application/json",
+                                      "Authorization": "Bearer %s" % token})
+            self.assertEqual(response.status_code, 403)
+
 

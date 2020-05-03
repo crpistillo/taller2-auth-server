@@ -33,10 +33,6 @@ def create_application(config_path: Optional[str] = None, return_controller: Opt
 
 def create_application_with_controller(controller: Controller):
     app = Flask(__name__)
-    # Swagger UI
-    @app.route('/static/<path:path>')
-    def send_static(path):
-        return send_from_directory("static", path)
 
     swaggerui_blueprint = get_swaggerui_blueprint(SWAGGER_URL, API_URL,
                                                   config= {"app_name": "Chotuve Auth Server"})

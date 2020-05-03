@@ -102,4 +102,22 @@ class TestUserDelete(unittest.TestCase):
                                                                      "Authorization": "Bearer %s" % self.admin_token})
             self.assertEqual(response.status_code, 404)
 
+    def test_delete_for_other_not_allowed_error(self):
+        with self.app.test_client() as c:
+            response = c.post('/user', data='{"email":"giancafferata@hotmail.com", "fullname":"Gianmarco Cafferata", '
+                                            '"phone_number":"11 1111-1111", "photo":"", "password":"asd123"}',
+                              headers={"Content-Type": "application/json"})
+            self.assertEqual(response.status_code, 200)
+            response = c.post('/user', data='{"email":"gcafferata@fi.uba.ar", "fullname":"Gianmarco Cafferata", '
+                                            '"phone_number":"11 1111-1111", "photo":"", "password":"asd123"}',
+                              headers={"Content-Type": "application/json"})
+            self.assertEqual(response.status_code, 200)
+            response = c.post('/user/login', data='{"email":"gcafferata@fi.uba.ar", "password":"asd123"}',
+                              headers={"Content-Type": "application/json"})
+            token = json.loads(response.data)["login_token"]
+
+            response = c.delete('/user', query_string={"email": "giancafferata@hotmail.com"},
+                             headers={"Authorization": "Bearer %s" % token})
+            self.assertEqual(response.status_code, 403)
+
 
