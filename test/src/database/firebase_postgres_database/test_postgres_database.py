@@ -6,6 +6,7 @@ from src.model.user_recovery_token import UserRecoveryToken
 from src.database.exceptions.user_not_found_error import UserNotFoundError
 from src.database.exceptions.user_recovery_token_not_found_error import UserRecoveryTokenNotFoundError
 from firebase_admin.exceptions import NotFoundError
+from src.database.exceptions.no_more_users import NoMoreUsers
 import pytest
 import firebase_admin
 import psycopg2
@@ -15,6 +16,9 @@ import os
 
 test_user = User(email="giancafferata@hotmail.com", fullname="Gianmarco Cafferata",
                  phone_number="11 1111-1111", photo="", secured_password=SecuredPassword.from_raw_password("password"))
+
+test_user2 = User(email="jian01.cs@hotmail.com", fullname="Gianmarco Cafferata",
+                  phone_number="11 1111-1111", photo="", secured_password=SecuredPassword.from_raw_password("password"))
 
 test_recovery_token = UserRecoveryToken(email="giancafferata@hotmail.com", token="token",
                                         timestamp=datetime.datetime.now().isoformat())
@@ -134,3 +138,15 @@ def test_save_user_not_found_in_firebase(monkeypatch, postgres_firebase_database
     monkeypatch.setattr(firebase_admin.auth, "update_user", raise_not_found)
     postgres_firebase_database.update_user(test_user, {"password": "asd123"})
     monkeypatch.setattr(firebase_admin.auth, "update_user", lambda *args, **kwargs: None)
+
+def test_list_no_more_users(postgres_firebase_database):
+    with pytest.raises(NoMoreUsers):
+        postgres_firebase_database.get_users(1,1)
+
+def test_list_one_user(postgres_firebase_database):
+    postgres_firebase_database.save_user(test_user)
+    postgres_firebase_database.save_user(test_user2)
+    users, pages = postgres_firebase_database.get_users(0,2)
+    assert users[0].email == "giancafferata@hotmail.com"
+    assert users[1].email == "jian01.cs@hotmail.com"
+    assert pages == 1
