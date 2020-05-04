@@ -127,6 +127,7 @@ class RamDatabase(Database):
         :param users_per_page: the quantity of users per page
         :return: a list of serialized users and the quantity of pages
         """
+        self.logger.debug("Called get users for page %d with %d users per page" % (page, users_per_page))
         if len(self.serialized_users) == 0:
             return [], 0
         pages = math.ceil(len(self.serialized_users) / users_per_page)

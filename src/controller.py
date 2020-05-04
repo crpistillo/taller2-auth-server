@@ -75,7 +75,7 @@ class Controller:
             self.logger.debug(messages.GENERATING_LOGIN_TOKEN_MESSAGE % content["email"])
             return json.dumps({"login_token": self.database.login(user)})
         else:
-            self.logger.info(messages.WRONG_CREDENTIALS_MESSAGE)
+            self.logger.debug(messages.WRONG_CREDENTIALS_MESSAGE)
             return messages.ERROR_JSON % messages.WRONG_CREDENTIALS_MESSAGE, 403
 
     @cross_origin()
@@ -249,6 +249,7 @@ class Controller:
         return messages.SUCCESS_JSON, 200
 
     @cross_origin()
+    @auth.login_required
     def registered_users(self):
         """
         Handles the return of all registered users
@@ -261,11 +262,14 @@ class Controller:
         except TypeError:
             self.logger.debug(messages.MISSING_FIELDS_ERROR)
             return messages.ERROR_JSON % messages.MISSING_FIELDS_ERROR, 400
+        if not auth.current_user().is_admin():
+            self.logger.debug(messages.USER_NOT_AUTHORIZED_ERROR)
+            return messages.ERROR_JSON % messages.USER_NOT_AUTHORIZED_ERROR, 403
         try:
             users, pages = self.database.get_users(page, users_per_page)
         except NoMoreUsers:
-            self.logger.debug(messages.INVALID_PAGE_ACCESS_ERROR % (page.__str__(), pages.__str__()))
-            return messages.ERROR_JSON % (messages.INVALID_PAGE_ACCESS_ERROR % (page.__str__(), pages.__str__())), 400
+            self.logger.debug(messages.INVALID_PAGE_ACCESS_ERROR % page.__str__())
+            return messages.ERROR_JSON % (messages.INVALID_PAGE_ACCESS_ERROR % page.__str__()), 400
         registered_users = {"results": [{k: v for k, v in user._asdict().items()
                                          if k != "password"}
                                         for user in users],
@@ -279,5 +283,4 @@ class Controller:
 
         :return: a tuple with the text and the status to return
         """
-        self.logger.debug("Api health asked")
         return messages.SUCCESS_JSON, 200
