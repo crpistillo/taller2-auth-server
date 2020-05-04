@@ -238,13 +238,13 @@ paths:
         description: The page to get
         required: true
         schema:
-          type: int
+          type: integer
       - name: users_per_page
         in: query
         description: The amount of users per page to get
         required: true
         schema:
-          type: int
+          type: integer
       security:
         - bearerAuth: []
       responses:
@@ -282,6 +282,6 @@ components:
         photo:
           type: string
         admin:
-          type: bool
+          type: boolean
       xml:
         name: User
