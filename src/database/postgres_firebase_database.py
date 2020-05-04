@@ -1,4 +1,4 @@
-from typing import NoReturn, Dict
+from typing import NoReturn, Dict, Tuple, List
 from src.model.user import User
 from src.model.user_recovery_token import UserRecoveryToken
 from src.database.database import Database
@@ -7,6 +7,7 @@ from src.database.serialized.serialized_user_recovery_token import SerializedUse
 from src.database.exceptions.user_not_found_error import UserNotFoundError
 from src.database.exceptions.user_recovery_token_not_found_error import UserRecoveryTokenNotFoundError
 from src.model.secured_password import SecuredPassword
+from src.database.exceptions.no_more_users import NoMoreUsers
 import psycopg2
 import firebase_admin
 from firebase_admin import auth
@@ -16,6 +17,7 @@ import logging
 import os
 import json
 import requests
+import math
 
 FIREBASE_LOGIN_API_URL = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword"
 
@@ -53,6 +55,17 @@ DELETE FROM %s
 WHERE email='%s';
 DELETE FROM %s
 WHERE email='%s';
+"""
+
+PAGINATED_LIST_QUERY = """
+SELECT email, fullname, phone_number, photo, password, admin
+FROM %s
+ORDER BY email ASC
+LIMIT %d OFFSET %d;
+"""
+
+COUNT_ROWS_QUERY = """
+SELECT COUNT(*) FROM %s
 """
 
 class PostgresFirebaseDatabase(Database):
@@ -235,4 +248,32 @@ class PostgresFirebaseDatabase(Database):
         cursor.close()
         firebase_uid = auth.get_user_by_email("giancafferata@hotmail.com").uid
         auth.delete_user(firebase_uid)
+
+    def get_users(self, page: int, users_per_page: int) -> Tuple[List[SerializedUser], int]:
+        """
+        Get a list of users paginated
+            if there are no more pages returns a NoMoreUsers exception
+
+        :param page: the page to return
+        :param users_per_page: the quantity of users per page
+        :return: a list of serialized users and the quantity of pages
+        """
+        self.logger.debug("Called get users for page %d with %d users per page" % (page, users_per_page))
+        start = page*users_per_page
+        cursor = self.conn.cursor()
+        cursor.execute(COUNT_ROWS_QUERY % self.users_table_name)
+        result = cursor.fetchone()
+        pages = math.ceil(result[0] / users_per_page)
+        if pages <= page:
+            raise NoMoreUsers
+        cursor.execute(PAGINATED_LIST_QUERY % (self.users_table_name, users_per_page, start))
+        result = cursor.fetchall()
+        # email, fullname, phone_number, photo, password, admin
+        result = [SerializedUser(email=r[0], fullname=r[1], phone_number=r[2],
+                                 photo="", password=r[4],
+                                 admin=r[5])
+                  for r in result]
+        cursor.close()
+
+        return result, pages
 
