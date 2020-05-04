@@ -29,7 +29,6 @@ USERS_REGISTER_MANDATORY_FIELDS = {"email", "password", "phone_number", "fullnam
 
 class Controller:
     logger = logging.getLogger(__name__)
-    # TODO: add missing loggings
     def __init__(self, database: Database, email_service: EmailService):
         """
         Here the init should receive all the parameters needed to know how to answer all the queries
@@ -76,7 +75,7 @@ class Controller:
             self.logger.debug(messages.GENERATING_LOGIN_TOKEN_MESSAGE % content["email"])
             return json.dumps({"login_token": self.database.login(user)})
         else:
-            self.logger.info(messages.WRONG_CREDENTIALS_MESSAGE)
+            self.logger.debug(messages.WRONG_CREDENTIALS_MESSAGE)
             return messages.ERROR_JSON % messages.WRONG_CREDENTIALS_MESSAGE, 403
 
     @cross_origin()
@@ -284,5 +283,4 @@ class Controller:
 
         :return: a tuple with the text and the status to return
         """
-        self.logger.debug("Api health asked")
         return messages.SUCCESS_JSON, 200
