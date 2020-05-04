@@ -264,8 +264,8 @@ class Controller:
         try:
             users, pages = self.database.get_users(page, users_per_page)
         except NoMoreUsers:
-            self.logger.debug(messages.INVALID_PAGE_ACCESS_ERROR % (page.__str__(), pages.__str__()))
-            return messages.ERROR_JSON % (messages.INVALID_PAGE_ACCESS_ERROR % (page.__str__(), pages.__str__())), 400
+            self.logger.debug(messages.INVALID_PAGE_ACCESS_ERROR % page.__str__())
+            return messages.ERROR_JSON % (messages.INVALID_PAGE_ACCESS_ERROR % page.__str__()), 400
         registered_users = {"results": [{k: v for k, v in user._asdict().items()
                                          if k != "password"}
                                         for user in users],
