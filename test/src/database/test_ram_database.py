@@ -60,6 +60,11 @@ class TestRamDatabase(unittest.TestCase):
         serialized_queried_by_token_user = SerializedUser.from_user(result_user)
         self.assertEqual(serialized_original_user, serialized_queried_by_token_user)
 
+    def test_list_empty_database(self):
+        users, pages = self.ram_database.get_users(page=0, users_per_page=1)
+        self.assertEqual(users, [])
+        self.assertEqual(pages, 0)
+
 
 
 

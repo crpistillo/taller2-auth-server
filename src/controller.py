@@ -29,6 +29,7 @@ USERS_REGISTER_MANDATORY_FIELDS = {"email", "password", "phone_number", "fullnam
 
 class Controller:
     logger = logging.getLogger(__name__)
+    # TODO: add missing loggings
     def __init__(self, database: Database, email_service: EmailService):
         """
         Here the init should receive all the parameters needed to know how to answer all the queries
@@ -249,6 +250,7 @@ class Controller:
         return messages.SUCCESS_JSON, 200
 
     @cross_origin()
+    @auth.login_required
     def registered_users(self):
         """
         Handles the return of all registered users
@@ -261,6 +263,9 @@ class Controller:
         except TypeError:
             self.logger.debug(messages.MISSING_FIELDS_ERROR)
             return messages.ERROR_JSON % messages.MISSING_FIELDS_ERROR, 400
+        if not auth.current_user().is_admin():
+            self.logger.debug(messages.USER_NOT_AUTHORIZED_ERROR)
+            return messages.ERROR_JSON % messages.USER_NOT_AUTHORIZED_ERROR, 403
         try:
             users, pages = self.database.get_users(page, users_per_page)
         except NoMoreUsers:
