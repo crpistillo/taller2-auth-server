@@ -1,5 +1,6 @@
 from create_application import create_application
 import unittest
+import json
 
 class TestUserLogin(unittest.TestCase):
     def setUp(self) -> None:
@@ -33,6 +34,7 @@ class TestUserLogin(unittest.TestCase):
             response = c.post('/user/login', data='{"email":"cpistillo@fi.uba.ar", "password": "carolina" }',
                               headers={"Content-Type": "application/json"})
             self.assertEqual(response.status_code, 200)
+            self.assertEqual(json.loads(response.data)["user"]["email"], "cpistillo@fi.uba.ar")
 
     def test_login_for_wrong_credentials_error(self):
         with self.app.test_client() as c:

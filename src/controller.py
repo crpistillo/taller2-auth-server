@@ -73,7 +73,10 @@ class Controller:
         secured_password = SecuredPassword.from_raw_password(content["password"])
         if user.password_match(secured_password):
             self.logger.debug(messages.GENERATING_LOGIN_TOKEN_MESSAGE % content["email"])
-            return json.dumps({"login_token": self.database.login(user)})
+            user_dict = SerializedUser.from_user(user)._asdict()
+            del user_dict["password"]
+            return json.dumps({"login_token": self.database.login(user),
+                               "user": user_dict})
         else:
             self.logger.debug(messages.WRONG_CREDENTIALS_MESSAGE)
             return messages.ERROR_JSON % messages.WRONG_CREDENTIALS_MESSAGE, 403

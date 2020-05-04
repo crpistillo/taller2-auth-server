@@ -150,6 +150,8 @@ paths:
                 properties:
                   login_token:
                     type: string
+                  user:
+                    $ref: '#/components/schemas/User'
         400:
           description: Missing fields or not a JSON
           content: {}
@@ -279,5 +281,7 @@ components:
           type: string
         photo:
           type: string
+        admin:
+          type: bool
       xml:
         name: User
