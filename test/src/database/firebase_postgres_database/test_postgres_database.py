@@ -7,6 +7,7 @@ from src.database.exceptions.user_not_found_error import UserNotFoundError
 from src.database.exceptions.user_recovery_token_not_found_error import UserRecoveryTokenNotFoundError
 from firebase_admin.exceptions import NotFoundError
 from src.database.exceptions.no_more_users import NoMoreUsers
+from src.database.exceptions.invalid_login_token import InvalidLoginToken
 import pytest
 import firebase_admin
 import psycopg2
@@ -150,3 +151,10 @@ def test_list_one_user(postgres_firebase_database):
     assert users[0].email == "giancafferata@hotmail.com"
     assert users[1].email == "jian01.cs@hotmail.com"
     assert pages == 1
+
+def test_unexistent_login_token(monkeypatch, postgres_firebase_database):
+    def value_error(*args, **kwargs):
+        raise ValueError
+    monkeypatch.setattr(firebase_admin.auth, "verify_id_token", value_error)
+    with pytest.raises(InvalidLoginToken):
+        postgres_firebase_database.get_user_by_token("")
