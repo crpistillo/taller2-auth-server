@@ -121,7 +121,7 @@ class PostgresFirebaseDatabase(Database):
         serialized_user = SerializedUser.from_user(user)
         self.logger.debug("Saving user with email %s" % serialized_user.email)
         try:
-            firebase_uid = auth.get_user_by_email("giancafferata@hotmail.com").uid
+            firebase_uid = auth.get_user_by_email(serialized_user.email).uid
             auth.update_user(firebase_uid, **{"password": serialized_user.password})
         except NotFoundError:
             auth.create_user(**{"email": serialized_user.email, "password": serialized_user.password})
