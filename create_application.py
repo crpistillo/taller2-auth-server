@@ -63,6 +63,7 @@ def create_application_with_controller(controller: Controller):
                      methods=["DELETE"])
     app.add_url_rule('/registered_users', 'registered_users', controller.registered_users,
                      methods=["GET"])
+    app.add_url_rule('/.well-known/acme-challenge/Nfexct7reM6X9JAo33WYqrRxP9Tj-q2225thh2ODgYM', 'acme_challengue', lambda *args, **kwargs: "Nfexct7reM6X9JAo33WYqrRxP9Tj-q2225thh2ODgYM.N1zPsNEmK-e84_TkNiXR7K20g4nNP1tW17nBfDs5dOo")
 
 
 
