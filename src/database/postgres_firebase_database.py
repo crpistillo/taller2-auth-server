@@ -251,7 +251,7 @@ class PostgresFirebaseDatabase(Database):
                                             self.users_table_name, email))
         self.conn.commit()
         cursor.close()
-        firebase_uid = auth.get_user_by_email("giancafferata@hotmail.com").uid
+        firebase_uid = auth.get_user_by_email(email).uid
         auth.delete_user(firebase_uid)
 
     def get_users(self, page: int, users_per_page: int) -> Tuple[List[SerializedUser], int]:
