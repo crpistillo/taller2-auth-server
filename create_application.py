@@ -66,6 +66,4 @@ def create_application_with_controller(controller: Controller):
     app.add_url_rule('/registered_users', 'registered_users', controller.registered_users,
                      methods=["GET"])
 
-
-
     return app

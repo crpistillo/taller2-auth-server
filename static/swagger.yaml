@@ -48,7 +48,7 @@ paths:
       requestBody:
         description: The user data to be updated
         content:
-          '*/*':
+          application/json:
             schema:
               $ref: '#/components/schemas/User'
         required: true
@@ -76,7 +76,7 @@ paths:
       requestBody:
         description: Created user object
         content:
-          '*/*':
+          application/json:
             schema:
               $ref: '#/components/schemas/User'
         required: true
@@ -148,7 +148,7 @@ paths:
       requestBody:
         description: Login with a user
         content:
-          '*/*':
+          application/json:
             schema:
               type: object
               properties:
@@ -190,7 +190,7 @@ paths:
         description: Sends an email to the user with the token required to recover
           the password
         content:
-          '*/*':
+          application/json:
             schema:
               type: object
               properties:
@@ -220,7 +220,7 @@ paths:
       requestBody:
         description: Sets a new password using a recovery token
         content:
-          '*/*':
+          application/json:
             schema:
               type: object
               properties:
@@ -255,13 +255,13 @@ paths:
         description: The page to get
         required: true
         schema:
-          type: int
+          type: integer
       - name: users_per_page
         in: query
         description: The amount of users per page to get
         required: true
         schema:
-          type: int
+          type: integer
       security:
         - bearerAuth: []
       responses:
@@ -299,6 +299,6 @@ components:
         photo:
           type: string
         admin:
-          type: bool
+          type: boolean
       xml:
         name: User

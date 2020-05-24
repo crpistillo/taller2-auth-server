@@ -11,8 +11,10 @@ from src.database.exceptions.no_more_users import NoMoreUsers
 import psycopg2
 import firebase_admin
 from firebase_admin import auth
+from firebase_admin.auth import InvalidIdTokenError, ExpiredIdTokenError, RevokedIdTokenError, CertificateFetchError
 from firebase_admin import credentials
 from firebase_admin.exceptions import NotFoundError
+from src.database.exceptions.invalid_login_token import InvalidLoginToken
 import logging
 import os
 import json
@@ -119,7 +121,7 @@ class PostgresFirebaseDatabase(Database):
         serialized_user = SerializedUser.from_user(user)
         self.logger.debug("Saving user with email %s" % serialized_user.email)
         try:
-            firebase_uid = auth.get_user_by_email("giancafferata@hotmail.com").uid
+            firebase_uid = auth.get_user_by_email(serialized_user.email).uid
             auth.update_user(firebase_uid, **{"password": serialized_user.password})
         except NotFoundError:
             auth.create_user(**{"email": serialized_user.email, "password": serialized_user.password})
@@ -196,7 +198,10 @@ class PostgresFirebaseDatabase(Database):
         :return: the user associated
         """
         self.logger.debug("Retrieving user by token")
-        user_email = auth.verify_id_token(login_token)["email"]
+        try:
+            user_email = auth.verify_id_token(login_token)["email"]
+        except (ValueError, InvalidIdTokenError, ExpiredIdTokenError, RevokedIdTokenError, CertificateFetchError):
+            raise InvalidLoginToken
         return self.search_user(user_email)
 
     def save_user_recovery_token(self, user_recovery_token: UserRecoveryToken) -> NoReturn:
@@ -246,7 +251,7 @@ class PostgresFirebaseDatabase(Database):
                                             self.users_table_name, email))
         self.conn.commit()
         cursor.close()
-        firebase_uid = auth.get_user_by_email("giancafferata@hotmail.com").uid
+        firebase_uid = auth.get_user_by_email(email).uid
         auth.delete_user(firebase_uid)
 
     def get_users(self, page: int, users_per_page: int) -> Tuple[List[SerializedUser], int]:
