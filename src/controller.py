@@ -279,6 +279,16 @@ class Controller:
                             "pages": pages}
         return json.dumps(registered_users)
 
+    @auth.login_required
+    def user_login_token_query(self):
+        """
+        Queries the user for a corresponding login token
+        :return: a json containing the email which the login token corresponds to or an error
+        """
+        user = auth.current_user()
+        serialized_user_dic = SerializedUser.from_user(user)._asdict()
+        return json.dumps(serialized_user_dic)
+
     @cross_origin()
     def api_health(self):
         """

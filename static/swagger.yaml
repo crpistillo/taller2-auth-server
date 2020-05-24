@@ -123,6 +123,23 @@ paths:
           description: User not found
           content: {}
   /user/login:
+    get:
+      tags:
+        - user
+      summary: Query user by login token
+      description: Queries all the user information
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        401:
+          description: Access token is missing or invalid
+          content: {}
     post:
       tags:
       - user

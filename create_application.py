@@ -49,6 +49,8 @@ def create_application_with_controller(controller: Controller):
     app.add_url_rule('/health', 'api_health', controller.api_health)
     app.add_url_rule('/user/login', 'users_login', controller.users_login,
                      methods=["POST"])
+    app.add_url_rule('/user/login', 'users_login_query', controller.user_login_token_query,
+                     methods=["GET"])
     app.add_url_rule('/user/recover_password', 'users_recover_password',
                      controller.users_recover_password, methods=["POST"])
     app.add_url_rule('/user/new_password', 'users_new_password',
