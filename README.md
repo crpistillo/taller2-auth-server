@@ -1,8 +1,18 @@
 Master:
 [![Build Status](https://travis-ci.com/urielkelman/taller2-auth-server.svg?token=tFcmLjoZ6PFesBqLEXNZ&branch=master)](https://travis-ci.com/urielkelman/taller2-auth-server)
+[![Coverage Status](
+https://coveralls.io/repos/github/urielkelman/taller2-auth-server/badge.svg?branch=master&t=WtyBFl
+)](
+https://coveralls.io/github/urielkelman/taller2-auth-server?branch=master
+)
 
 Develop:
 [![Build Status](https://travis-ci.com/urielkelman/taller2-auth-server.svg?token=tFcmLjoZ6PFesBqLEXNZ&branch=develop)](https://travis-ci.com/urielkelman/taller2-auth-server)
+[![Coverage Status](
+https://coveralls.io/repos/github/urielkelman/taller2-auth-server/badge.svg?branch=master&t=WtyBFl
+)](
+https://coveralls.io/github/urielkelman/taller2-auth-server?branch=develop
+)
 
 # Chotuve Auth Server
 
