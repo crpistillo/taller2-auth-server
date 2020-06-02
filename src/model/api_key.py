@@ -23,4 +23,4 @@ class ApiKey:
         """
         Return the api-key alias
         """
-        return
+        return self.alias
