@@ -10,6 +10,8 @@ databases:
   PostgresFirebaseDatabase:
     users_table_name: "chotuve.users"
     recovery_token_table_name: "chotuve.user_recovery_token"
+    api_key_table_name: "chotuve.api_keys"
+    api_calls_table_name: "chotuve.api_key_calls"
     postgr_host_env_name: "POSTGRES_HOST"
     postgr_user_env_name: "POSTGRES_USER"
     postgr_pass_env_name: "POSTGRES_PASS"
