@@ -9,10 +9,12 @@ from src.database.exceptions.user_not_found_error import UserNotFoundError
 from src.database.exceptions.user_recovery_token_not_found_error import UserRecoveryTokenNotFoundError
 from src.database.exceptions.invalid_login_token import InvalidLoginToken
 from src.database.exceptions.no_more_users import NoMoreUsers
+from src.model.api_key import ApiKey
 import logging
 import hashlib
 from operator import itemgetter
 import math
+from datetime import datetime
 
 class RamDatabase(Database):
     """
@@ -25,6 +27,8 @@ class RamDatabase(Database):
         self.serialized_users = {}
         self.serialized_user_recovery_tokens = {}
         self.tokens = {}
+        self.api_keys = {}
+        self.api_calls = {}
 
     def save_user(self, user: User) -> NoReturn:
         """
@@ -137,3 +141,34 @@ class RamDatabase(Database):
         end = start + users_per_page
         list_of_users = sorted(list(self.serialized_users.values()), key=lambda x: x.email)
         return list_of_users[start:end], pages
+
+    def save_api_key(self, api_key: ApiKey):
+        """
+        Registers an api call made with an api key
+
+        :param api_key: the api key
+        """
+        self.api_keys[api_key.get_api_key_hash()] = ApiKey
+
+    def check_api_key(self, api_key_str: str) -> bool:
+        """
+        Checks if an api key is valid.
+
+        :param api_key_str: the api key code
+        """
+        return api_key_str in self.api_keys
+
+    def register_api_call(self, api_key_str: str, path: str,
+                          status: int, time: float, timestamp: datetime):
+        """
+        Registers an api call made with an api key
+
+        :param api_key_str: the api key code
+        :param path: the url path
+        :param status: the status code answer
+        :param time: the time elapsed processing the api call
+        :param timestamp: the date and time when the api call happened
+        """
+        if api_key_str not in self.api_calls:
+            self.api_calls[api_key_str] = []
+        self.api_calls[api_key_str].append((path, status, time, timestamp))

@@ -15,11 +15,13 @@ from firebase_admin.auth import InvalidIdTokenError, ExpiredIdTokenError, Revoke
 from firebase_admin import credentials
 from firebase_admin.exceptions import NotFoundError
 from src.database.exceptions.invalid_login_token import InvalidLoginToken
+from src.model.api_key import ApiKey
 import logging
 import os
 import json
 import requests
 import math
+import datetime
 
 FIREBASE_LOGIN_API_URL = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword"
 
@@ -70,19 +72,40 @@ COUNT_ROWS_QUERY = """
 SELECT COUNT(*) FROM %s
 """
 
+API_KEY_INSERT_OR_UPDATE = """
+INSERT INTO %s (alias, api_key)
+VALUES ('%s', '%s')
+ON CONFLICT (alias) DO UPDATE 
+  SET api_key = excluded.api_key
+"""
+
+CHECK_API_KEY = """
+SELECT api_key 
+FROM %s 
+WHERE api_key='%s'
+"""
+
+SAVE_API_CALL = """
+INSERT INTO %s (alias, path, stats, timestamp)
+VALUES ('%s', '%s', '%d', '%s')
+"""
+
 class PostgresFirebaseDatabase(Database):
     """
     Postgres & Firebase implementation of Database abstraction
     """
     logger = logging.getLogger(__name__)
     # TODO: avoid sql injection
-    def __init__(self, users_table_name: str, recovery_token_table_name: str, postgr_host_env_name: str,
+    def __init__(self, users_table_name: str, recovery_token_table_name: str, api_key_table_name: str,
+                 api_calls_table_name: str, postgr_host_env_name: str,
                  postgr_user_env_name: str, postgr_pass_env_name: str, postgr_database_env_name: str,
                  firebase_json_env_name: str, firebase_api_key_env_name: str):
         """
 
         :param users_table_name: the name of the table for querying users
         :param recovery_token_table_name: the name of the table for querying recovery tokens
+        :param api_key_table_name: the table name of the api keys
+        :param api_calls_table_name: the table name of the api calls
         :param postgr_host_env_name: the env variable name for getting the host
         :param postgr_user_env_name: the env variable name for getting the user
         :param postgr_pass_env_name: the env variable name for getting the password
@@ -92,6 +115,8 @@ class PostgresFirebaseDatabase(Database):
         """
         self.users_table_name = users_table_name
         self.recovery_token_table_name = recovery_token_table_name
+        self.api_key_table_name = api_key_table_name
+        self.api_calls_table_name = api_calls_table_name
         self.conn = psycopg2.connect(host=os.environ[postgr_host_env_name], user=os.environ[postgr_user_env_name],
                                      password=os.environ[postgr_pass_env_name],
                                      database=os.environ[postgr_database_env_name])
@@ -281,4 +306,48 @@ class PostgresFirebaseDatabase(Database):
         cursor.close()
 
         return result, pages
+
+    def save_api_key(self, api_key: ApiKey):
+        """
+        Registers an api call made with an api key
+
+        :param api_key: the api key
+        """
+        cursor = self.conn.cursor()
+        query = API_KEY_INSERT_OR_UPDATE % (self.api_key_table_name,
+                                            api_key.get_alias(), api_key.get_api_key_hash())
+        cursor.execute(query)
+        self.conn.commit()
+        cursor.close()
+
+    def check_api_key(self, api_key_str: str) -> bool:
+        """
+        Checks if an api key is valid.
+
+        :param api_key_str: the api key code
+        """
+        cursor = self.conn.cursor()
+        query = CHECK_API_KEY % (self.api_key_table_name, api_key_str)
+        cursor.execute(query)
+        api_key_valid = len(cursor.fetchall()) == 1
+        cursor.close()
+        return api_key_valid
+
+    def register_api_call(self, api_key_str: str, path: str,
+                          status: int, time: float, timestamp: datetime):
+        """
+        Registers an api call made with an api key
+
+        :param api_key_str: the api key code
+        :param path: the url path
+        :param status: the status code answer
+        :param time: the time elapsed processing the api call
+        :param timestamp: the date and time when the api call happened
+        """
+        cursor = self.conn.cursor()
+        query = SAVE_API_CALL % (self.api_calls_table_name, api_key_str,
+                                 path, status, timestamp.isoformat())
+        cursor.execute(query)
+        self.conn.commit()
+        cursor.close()
 

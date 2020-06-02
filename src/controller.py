@@ -1,6 +1,7 @@
 import json
 import logging
-from typing import Optional
+from logging import Logger
+from typing import Optional, Callable
 from .constants import messages
 from .database.database import Database
 from .database.exceptions.user_recovery_token_not_found_error import UserRecoveryTokenNotFoundError
@@ -17,11 +18,17 @@ from src.model.user_recovery_token import UserRecoveryToken
 from .services.email import EmailService
 from flask_cors import cross_origin
 from flask_httpauth import HTTPTokenAuth
+from timeit import default_timer as timer
+from functools import partial
+from src.model.api_key import ApiKey
+import datetime
+import os
 
 auth = HTTPTokenAuth(scheme='Bearer')
 
 RECOVERY_TOKEN_SECRET = "dummy"
 LOGIN_MANDATORY_FIELDS = {"email", "password"}
+API_KEY_CREATE_MANDATORY_FIELDS = {"alias", "secret"}
 RECOVER_PASSWORD_MANDATORY_FIELDS = {"email"}
 NEW_PASSWORD_MANDATORY_FIELDS = {"email", "new_password", "token"}
 USERS_REGISTER_MANDATORY_FIELDS = {"email", "password", "phone_number", "fullname", "photo"}
@@ -29,10 +36,17 @@ USERS_REGISTER_MANDATORY_FIELDS = {"email", "password", "phone_number", "fullnam
 
 class Controller:
     logger = logging.getLogger(__name__)
-    def __init__(self, database: Database, email_service: EmailService):
+    def __init__(self, database: Database, email_service: EmailService,
+                 api_key_secret_generator_env_name: str):
         """
         Here the init should receive all the parameters needed to know how to answer all the queries
+
+        :param database: the database to use
+        :param email_service: email sending service
+        :param api_key_secret_generator_env_name:
+        the name of the env variable containing the api key secret generator
         """
+        global uses_api_key
 
         @auth.verify_token
         def verify_token(token) -> Optional[User]:
@@ -49,6 +63,36 @@ class Controller:
 
         self.database = database
         self.email_service = email_service
+        self.api_key_secret_generator = os.environ[api_key_secret_generator_env_name]
+        api_key_decorator = partial(self.api_key_decorator, self.logger, database)
+        self.users_recover_password = api_key_decorator(self.users_recover_password)
+        self.users_login = api_key_decorator(self.users_login)
+        self.users_new_password = api_key_decorator(self.users_new_password)
+        self.users_register = api_key_decorator(self.users_register)
+        self.users_profile_query = api_key_decorator(self.users_profile_query)
+        self.users_profile_update = api_key_decorator(self.users_profile_update)
+        self.users_delete = api_key_decorator(self.users_delete)
+        self.registered_users = api_key_decorator(self.registered_users)
+        self.user_login_token_query = api_key_decorator(self.user_login_token_query)
+        self.api_health = api_key_decorator(self.api_health)
+
+    @staticmethod
+    def api_key_decorator(logger: Logger, database: Database,
+                          func: Callable):
+        def wrapper():
+            api_key = request.args.get('api_key')
+            if not api_key:
+                logger.debug(messages.API_KEY_NOT_FOUND)
+                return messages.ERROR_JSON % messages.API_KEY_NOT_FOUND, 401
+            if database.check_api_key(api_key):
+                start = timer()
+                result = func()
+                database.register_api_call(api_key, request.path, result.status_code, timer()-start, datetime.datetime.now())
+                return result
+            else:
+                logger.debug(messages.API_KEY_INVALID)
+                return messages.ERROR_JSON % messages.API_KEY_INVALID, 403
+        return wrapper
 
     @cross_origin()
     def users_login(self):
@@ -188,9 +232,6 @@ class Controller:
         if not email_query:
             self.logger.debug(messages.MISSING_FIELDS_ERROR)
             return messages.ERROR_JSON % messages.MISSING_FIELDS_ERROR, 400
-        if email_query != auth.current_user().get_email() and not auth.current_user().is_admin():
-            self.logger.debug(messages.USER_NOT_AUTHORIZED_ERROR)
-            return messages.ERROR_JSON % messages.USER_NOT_AUTHORIZED_ERROR, 403
         try:
             user = self.database.search_user(email_query)
         except UserNotFoundError:
@@ -198,7 +239,7 @@ class Controller:
             return messages.ERROR_JSON % (messages.USER_NOT_FOUND_MESSAGE % email_query), 404
 
         serialized_user_dic = SerializedUser.from_user(user)._asdict()
-        return json.dumps(serialized_user_dic)
+        return json.dumps(serialized_user_dic), 200
 
     @cross_origin()
     @auth.login_required
@@ -277,9 +318,10 @@ class Controller:
                                          if k != "password"}
                                         for user in users],
                             "pages": pages}
-        return json.dumps(registered_users)
+        return json.dumps(registered_users), 200
 
     @auth.login_required
+    @cross_origin()
     def user_login_token_query(self):
         """
         Queries the user for a corresponding login token
@@ -287,7 +329,29 @@ class Controller:
         """
         user = auth.current_user()
         serialized_user_dic = SerializedUser.from_user(user)._asdict()
-        return json.dumps(serialized_user_dic)
+        return json.dumps(serialized_user_dic), 200
+
+    @cross_origin()
+    def new_api_key(self):
+        """
+        Gets a new api key for a server
+        :return a json containing the api key to be used
+        """
+        try:
+            assert request.is_json
+        except AssertionError:
+            self.logger.debug(messages.REQUEST_IS_NOT_JSON)
+            return messages.ERROR_JSON % messages.REQUEST_IS_NOT_JSON, 400
+        content = request.get_json()
+        if not API_KEY_CREATE_MANDATORY_FIELDS.issubset(content.keys()):
+            self.logger.debug(messages.MISSING_FIELDS_ERROR)
+            return messages.ERROR_JSON % messages.MISSING_FIELDS_ERROR, 400
+        if not content["secret"] == self.api_key_secret_generator:
+            self.logger.debug(messages.API_KEY_SECRET_INVALID)
+            return messages.ERROR_JSON % messages.API_KEY_SECRET_INVALID, 403
+        api_key = ApiKey(content["alias"])
+        self.database.save_api_key(api_key)
+        return json.dumps({"api_key": api_key.get_api_key_hash()}), 200
 
     @cross_origin()
     def api_health(self):

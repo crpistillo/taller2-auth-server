@@ -1,4 +1,5 @@
 database: RamDatabase
+api_key_secret_generator_env_name: API_GENERATOR_SECRET
 
 email_service:
   sendgrid_email_env_name: "SENDGRID_EMAIL"

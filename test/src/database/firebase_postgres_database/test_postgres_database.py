@@ -8,6 +8,7 @@ from src.database.exceptions.user_recovery_token_not_found_error import UserReco
 from firebase_admin.exceptions import NotFoundError
 from src.database.exceptions.no_more_users import NoMoreUsers
 from src.database.exceptions.invalid_login_token import InvalidLoginToken
+from src.model.api_key import ApiKey
 import pytest
 import firebase_admin
 import psycopg2
@@ -56,7 +57,7 @@ def postgres_firebase_database(monkeypatch, postgresql):
     aux_connect = psycopg2.connect
     monkeypatch.setattr(psycopg2, "connect", lambda *args, **kwargs: FakePostgres(0))
     os.environ["DUMB_ENV_NAME"] = "{}"
-    database = PostgresFirebaseDatabase(*(["DUMB_ENV_NAME"]*8))
+    database = PostgresFirebaseDatabase(*(["DUMB_ENV_NAME"]*10))
     monkeypatch.setattr(psycopg2, "connect", aux_connect)
     with open("test/src/database/config/initialize_db.sql", "r") as initialize_query:
         cursor = postgresql.cursor()
@@ -66,13 +67,15 @@ def postgres_firebase_database(monkeypatch, postgresql):
     database.conn = postgresql
     database.users_table_name = "chotuve.users"
     database.recovery_token_table_name = "chotuve.user_recovery_token"
+    database.api_key_table_name = "chotuve.api_keys"
+    database.api_calls_table_name = "chotuve.api_key_calls"
     return database
 
 def test_postgres_connection_error(monkeypatch, postgres_firebase_database):
     aux_connect = psycopg2.connect
     monkeypatch.setattr(psycopg2, "connect", lambda *args, **kwargs: FakePostgres(1))
     with pytest.raises(ConnectionError):
-        database = PostgresFirebaseDatabase(*(["DUMB_ENV_NAME"] * 8))
+        database = PostgresFirebaseDatabase(*(["DUMB_ENV_NAME"] * 10))
     monkeypatch.setattr(psycopg2, "connect", aux_connect)
 
 def test_firebase_connection_error(monkeypatch, postgres_firebase_database):
@@ -80,7 +83,7 @@ def test_firebase_connection_error(monkeypatch, postgres_firebase_database):
     monkeypatch.setattr(psycopg2, "connect", lambda *args, **kwargs: FakePostgres(0))
     monkeypatch.setattr(firebase_admin, "get_app", lambda *args, **kwargs: None)
     with pytest.raises(ConnectionError):
-        database = PostgresFirebaseDatabase(*(["DUMB_ENV_NAME"] * 8))
+        database = PostgresFirebaseDatabase(*(["DUMB_ENV_NAME"] * 10))
     monkeypatch.setattr(psycopg2, "connect", aux_connect)
 
 def test_unexistent_user(postgres_firebase_database):
@@ -158,3 +161,11 @@ def test_unexistent_login_token(monkeypatch, postgres_firebase_database):
     monkeypatch.setattr(firebase_admin.auth, "verify_id_token", value_error)
     with pytest.raises(InvalidLoginToken):
         postgres_firebase_database.get_user_by_token("")
+
+def test_unexistent_api_key_invalid(postgres_firebase_database):
+    assert not postgres_firebase_database.check_api_key("api key string")
+
+def test_api_key_valid(postgres_firebase_database):
+    api_key = ApiKey("test")
+    postgres_firebase_database.save_api_key(api_key)
+    assert postgres_firebase_database.check_api_key(api_key.get_api_key_hash())

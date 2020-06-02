@@ -7,7 +7,7 @@ from yaml import Loader
 class AuthServerConfig(NamedTuple):
     database: Database
     email_service: EmailService
-
+    api_key_secret_generator_env_name: str
 
 
 def load_config(config_path: str) -> AuthServerConfig:
@@ -24,4 +24,5 @@ def load_config(config_path: str) -> AuthServerConfig:
     database = Database.factory(database_name, **config_dict["databases"][database_name])
 
     return AuthServerConfig(database=database,
-                            email_service=EmailService(**config_dict["email_service"]))
+                            email_service=EmailService(**config_dict["email_service"]),
+                            api_key_secret_generator_env_name=config_dict["api_key_secret_generator_env_name"])

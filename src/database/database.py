@@ -4,7 +4,9 @@ from abc import abstractmethod
 from src.model.user_recovery_token import UserRecoveryToken
 from src.model.secured_password import SecuredPassword
 from src.database.serialized.serialized_user import SerializedUser
+from src.model.api_key import ApiKey
 from typing import List
+from datetime import datetime
 
 class Database:
     """
@@ -117,4 +119,34 @@ class Database:
         :param users_per_page: the quantity of users per page
         :return: a list of serialized users and the quantity of pages
         """
+
+    @abstractmethod
+    def save_api_key(self, api_key: ApiKey):
+        """
+        Registers an api call made with an api key
+
+        :param api_key: the api key
+        """
+
+    @abstractmethod
+    def check_api_key(self, api_key: str) -> bool:
+        """
+        Checks if an api key is valid.
+
+        :param api_key: the api key
+        """
+
+    @abstractmethod
+    def register_api_call(self, api_key_str: str, path: str,
+                          status: int, time: float, timestamp: datetime):
+        """
+        Registers an api call made with an api key
+
+        :param api_key_str: the api key code
+        :param path: the url path
+        :param status: the status code answer
+        :param time: the time elapsed processing the api call
+        :param timestamp: the date and time when the api call happened
+        """
+
 

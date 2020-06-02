@@ -25,7 +25,8 @@ def create_application(config_path: Optional[str] = None, return_controller: Opt
     if not config_path:
         config_path = DEFAULT_CONFIG_FILE
     config = load_config(config_path)
-    controller = Controller(database=config.database, email_service=config.email_service)
+    controller = Controller(database=config.database, email_service=config.email_service,
+                            api_key_secret_generator_env_name=config.api_key_secret_generator_env_name)
     if not return_controller:
         return create_application_with_controller(controller)
     else:
@@ -44,6 +45,7 @@ def create_application_with_controller(controller: Controller):
                                 "/user/new_password": {"origins": "*"},
                                 "/user/login": {"origins": "*"},
                                 "/registered_users": {"origins": "*"},
+                                "/api_key": {"origins": "*"},
                                 "/health": {"origins": "*"}})
 
     app.add_url_rule('/health', 'api_health', controller.api_health)
@@ -65,5 +67,7 @@ def create_application_with_controller(controller: Controller):
                      methods=["DELETE"])
     app.add_url_rule('/registered_users', 'registered_users', controller.registered_users,
                      methods=["GET"])
+    app.add_url_rule('/api_key', 'new_api_key', controller.new_api_key,
+                     methods=["POST"])
 
     return app
