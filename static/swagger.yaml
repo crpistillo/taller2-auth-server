@@ -16,6 +16,12 @@ paths:
       summary: Query users
       description: Queries all the user information
       parameters:
+      - name: api_key
+        in: query
+        description: The api key
+        required: true
+        schema:
+          type: string
       - name: email
         in: query
         description: The user name for login
@@ -45,6 +51,13 @@ paths:
       - user
       summary: Update users profile
       description: Updates the data of the user
+      parameters:
+        - name: api_key
+          in: query
+          description: The api key
+          required: true
+          schema:
+            type: string
       requestBody:
         description: The user data to be updated
         content:
@@ -73,6 +86,13 @@ paths:
       - user
       summary: Create user
       description: Creates an user
+      parameters:
+        - name: api_key
+          in: query
+          description: The api key
+          required: true
+          schema:
+            type: string
       requestBody:
         description: Created user object
         content:
@@ -98,12 +118,18 @@ paths:
       summary: Deletes an user from database
       description: Removes all user data from database
       parameters:
-      - name: email
-        in: query
-        description: The email of the user to be deleted
-        required: true
-        schema:
-          type: string
+        - name: api_key
+          in: query
+          description: The api key
+          required: true
+          schema:
+            type: string
+        - name: email
+          in: query
+          description: The email of the user to be deleted
+          required: true
+          schema:
+            type: string
       security:
         - bearerAuth: []
       responses:
@@ -128,6 +154,13 @@ paths:
         - user
       summary: Query user by login token
       description: Queries all the user information
+      parameters:
+        - name: api_key
+          in: query
+          description: The api key
+          required: true
+          schema:
+            type: string
       security:
         - bearerAuth: []
       responses:
@@ -145,6 +178,13 @@ paths:
       - user
       summary: Login
       description: Logins a user
+      parameters:
+        - name: api_key
+          in: query
+          description: The api key
+          required: true
+          schema:
+            type: string
       requestBody:
         description: Login with a user
         content:
@@ -186,6 +226,13 @@ paths:
       summary: Recover password
       description: Sends an email to the user with the token required to recover the
         password
+      parameters:
+        - name: api_key
+          in: query
+          description: The api key
+          required: true
+          schema:
+            type: string
       requestBody:
         description: Sends an email to the user with the token required to recover
           the password
@@ -217,6 +264,13 @@ paths:
       - user
       summary: Set new password
       description: Sets a new password using a recovery token
+      parameters:
+        - name: api_key
+          in: query
+          description: The api key
+          required: true
+          schema:
+            type: string
       requestBody:
         description: Sets a new password using a recovery token
         content:
@@ -250,18 +304,24 @@ paths:
       summary: Get a paginated list of registered users
       description: Get a paginated list of registered users
       parameters:
-      - name: page
-        in: query
-        description: The page to get
-        required: true
-        schema:
-          type: integer
-      - name: users_per_page
-        in: query
-        description: The amount of users per page to get
-        required: true
-        schema:
-          type: integer
+        - name: api_key
+          in: query
+          description: The api key
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: The page to get
+          required: true
+          schema:
+            type: integer
+        - name: users_per_page
+          in: query
+          description: The amount of users per page to get
+          required: true
+          schema:
+            type: integer
       security:
         - bearerAuth: []
       responses:
