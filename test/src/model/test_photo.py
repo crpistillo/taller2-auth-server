@@ -33,3 +33,31 @@ class TestUnitsPhoto(unittest.TestCase):
         hash0 = imagehash.average_hash(image)
         hash1 = imagehash.average_hash(target_image)
         self.assertEqual(hash0 - hash1, 0)
+
+    def test_from_file_thin_jpg(self):
+        with open("test_photos/thin_jpg.jpg", "rb") as photo_file:
+            photo = Photo.from_bytes(BytesIO(photo_file.read()))
+        base64_img = photo.get_base64()
+        image = Image.open(BytesIO(base64.b64decode(base64_img)))
+        width, height = image.size
+        self.assertEqual(width, 200)
+        self.assertEqual(height, 200)
+        with open("test_photos/thin_jpg_target.jpg", "rb") as photo_file:
+            target_image = Image.open(BytesIO(photo_file.read()))
+        hash0 = imagehash.average_hash(image)
+        hash1 = imagehash.average_hash(target_image)
+        self.assertEqual(hash0 - hash1, 0)
+
+    def test_from_file_one_dimension_smaller_jpg(self):
+        with open("test_photos/one_dimension_smaller.jpg", "rb") as photo_file:
+            photo = Photo.from_bytes(BytesIO(photo_file.read()))
+        base64_img = photo.get_base64()
+        image = Image.open(BytesIO(base64.b64decode(base64_img)))
+        width, height = image.size
+        self.assertEqual(width, 200)
+        self.assertEqual(height, 200)
+        with open("test_photos/one_dimension_smaller_target.jpg", "rb") as photo_file:
+            target_image = Image.open(BytesIO(photo_file.read()))
+        hash0 = imagehash.average_hash(image)
+        hash1 = imagehash.average_hash(target_image)
+        self.assertEqual(hash0 - hash1, 0)
