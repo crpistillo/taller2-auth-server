@@ -17,6 +17,7 @@ from firebase_admin.exceptions import NotFoundError
 from src.database.exceptions.invalid_login_token import InvalidLoginToken
 from src.model.api_key import ApiKey
 from src.model.photo import Photo
+from psycopg2.sql import Identifier, SQL
 import logging
 import os
 import json
@@ -27,8 +28,8 @@ import datetime
 FIREBASE_LOGIN_API_URL = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword"
 
 USER_INSERT_QUERY = """
-INSERT INTO %s (email, fullname, phone_number, photo, password, admin)
-VALUES ('%s', '%s', '%s', '%s', '%s', '%s')
+INSERT INTO {} (email, fullname, phone_number, photo, password, admin)
+VALUES (%s, %s, %s, %s, %s, %s)
 ON CONFLICT (email) DO UPDATE 
   SET fullname = excluded.fullname, 
       phone_number = excluded.phone_number,
@@ -153,10 +154,11 @@ class PostgresFirebaseDatabase(Database):
         except NotFoundError:
             auth.create_user(**{"email": serialized_user.email, "password": serialized_user.password})
 
-        query = USER_INSERT_QUERY % (self.users_table_name, serialized_user.email, serialized_user.fullname,
-                                     serialized_user.phone_number, serialized_user.photo, serialized_user.password,
-                                     serialized_user.admin)
-        cursor.execute(query)
+
+        cursor.execute(USER_INSERT_QUERY.format(self.users_table_name),
+                       (serialized_user.email, serialized_user.fullname,
+                        serialized_user.phone_number, serialized_user.photo, serialized_user.password,
+                        serialized_user.admin))
         self.conn.commit()
         cursor.close()
 

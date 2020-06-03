@@ -1,10 +1,8 @@
 from create_application import create_application
-from src.model.user import User
-from src.model.secured_password import SecuredPassword
 import unittest
 import json
-from src.model.secured_password import SecuredPassword
 import os
+from io import BytesIO
 
 class TestUserRegistration(unittest.TestCase):
     def setUp(self) -> None:
@@ -79,3 +77,13 @@ class TestUserRegistration(unittest.TestCase):
             self.assertEqual(response_json["email"], "giancafferata@hotmail.com")
             self.assertEqual(response_json["fullname"], "Gianmarco Cafferata")
             self.assertEqual(response_json["phone_number"], "11 1111-1111")
+
+    def test_register_with_photo(self):
+        with open("test_photos/thin_jpg.jpg", "rb") as image_file:
+            image_file = BytesIO(image_file.read())
+        with self.app.test_client() as c:
+            response = c.post('/user', data={"email":"giancafferata@hotmail.com", "fullname":"Gianmarco Cafferata",
+                                             "phone_number":"11 1111-1111", "password":"asd123",
+                                             "file": (image_file, 'photo')},
+                              query_string={"api_key": self.api_key})
+            self.assertEqual(response.status_code, 200)

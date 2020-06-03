@@ -55,7 +55,7 @@ class Photo:
 
         buffered = BytesIO()
         image.save(buffered, quality=90, format="JPEG")
-        return cls(base64.b64encode(buffered.getvalue()))
+        return cls(base64.b64encode(buffered.getvalue()).decode())
 
     def get_base64(self) -> str:
         return self.photo_base64

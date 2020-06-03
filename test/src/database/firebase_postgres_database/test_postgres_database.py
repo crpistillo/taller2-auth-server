@@ -16,6 +16,7 @@ from typing import NamedTuple
 from src.model.user import Photo
 import requests
 import os
+from io import BytesIO
 
 test_user = User(email="giancafferata@hotmail.com", fullname="Gianmarco Cafferata",
                  phone_number="11 1111-1111", photo=Photo(), secured_password=SecuredPassword.from_raw_password("password"))
@@ -170,3 +171,12 @@ def test_api_key_valid(postgres_firebase_database):
     api_key = ApiKey("test", "dumb")
     postgres_firebase_database.save_api_key(api_key)
     assert postgres_firebase_database.check_api_key(api_key.get_api_key_hash())
+
+def test_user_with_photo(postgres_firebase_database):
+    with open("test_photos/thin_jpg.jpg", "rb") as image_photo:
+        photo = Photo.from_bytes(BytesIO(image_photo.read()))
+    user_test = User(email="giancafferata@hotmail.com", fullname="Gianmarco Cafferata",phone_number = "11 1111-1111",
+                    photo=photo, secured_password=SecuredPassword.from_raw_password("password"))
+    postgres_firebase_database.save_user(user_test)
+    user = postgres_firebase_database.search_user("giancafferata@hotmail.com")
+    assert user.get_email() == "giancafferata@hotmail.com"
