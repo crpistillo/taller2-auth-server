@@ -301,7 +301,7 @@ class PostgresFirebaseDatabase(Database):
         result = cursor.fetchall()
         # email, fullname, phone_number, photo, password, admin
         result = [SerializedUser(email=r[0], fullname=r[1], phone_number=r[2],
-                                 photo="", password=r[4],
+                                 photo=r[3], password=r[4],
                                  admin=r[5])
                   for r in result]
         cursor.close()
