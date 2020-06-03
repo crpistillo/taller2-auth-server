@@ -87,7 +87,7 @@ WHERE api_key='%s'
 """
 
 SAVE_API_CALL = """
-INSERT INTO %s (alias, path, stats, timestamp)
+INSERT INTO %s (alias, path, status, timestamp)
 VALUES ('%s', '%s', '%d', '%s')
 """
 
