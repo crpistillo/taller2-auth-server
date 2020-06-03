@@ -8,7 +8,7 @@ class ApiKey:
     """
 
     def __init__(self, alias: str, api_secret_generator: str,
-                 health_endpoint: str):
+                 health_endpoint: Optional[str]=None):
         """
 
         :param alias: the alias of the owner of the key

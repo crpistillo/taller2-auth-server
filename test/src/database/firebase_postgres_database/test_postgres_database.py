@@ -166,6 +166,6 @@ def test_unexistent_api_key_invalid(postgres_firebase_database):
     assert not postgres_firebase_database.check_api_key("api key string")
 
 def test_api_key_valid(postgres_firebase_database):
-    api_key = ApiKey("test")
+    api_key = ApiKey("test", "dumb")
     postgres_firebase_database.save_api_key(api_key)
     assert postgres_firebase_database.check_api_key(api_key.get_api_key_hash())

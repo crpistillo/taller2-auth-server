@@ -76,8 +76,8 @@ API_KEY_INSERT_OR_UPDATE = """
 INSERT INTO %s (alias, api_key, health_endpoint)
 VALUES ('%s', '%s', '%s')
 ON CONFLICT (alias) DO UPDATE 
-  SET api_key = excluded.api_key
-  SET health_endpoint = excluded.health_endpoint
+  SET api_key = excluded.api_key,
+      health_endpoint = excluded.health_endpoint;
 """
 
 CHECK_API_KEY = """
