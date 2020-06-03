@@ -1,6 +1,7 @@
 from create_application import create_application
 from src.model.user import User
 from src.model.secured_password import SecuredPassword
+from src.model.photo import Photo
 import unittest
 import json
 import os
@@ -10,7 +11,7 @@ class TestUserDelete(unittest.TestCase):
         os.environ["API_GENERATOR_SECRET"] = "secret string"
         self.app, self.controller = create_application(return_controller=True)
         admin_user = User(email="admin@admin.com", fullname="Admin",
-                          phone_number="11 1111-1111", photo="",
+                          phone_number="11 1111-1111", photo=Photo(),
                           secured_password=SecuredPassword.from_raw_password("admin"),
                           admin=True)
         self.controller.database.save_user(admin_user)

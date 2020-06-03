@@ -21,6 +21,7 @@ from flask_httpauth import HTTPTokenAuth
 from timeit import default_timer as timer
 from functools import partial
 from src.model.api_key import ApiKey
+from src.model.photo import Photo
 import datetime
 import os
 
@@ -208,8 +209,9 @@ class Controller:
             pass
         secured_password = SecuredPassword.from_raw_password(content["password"])
         try:
+            photo = Photo()
             user = User(email=content["email"], fullname=content["fullname"],
-                        phone_number=content["phone_number"], photo=content["photo"],
+                        phone_number=content["phone_number"], photo=photo,
                         secured_password=secured_password)
         except InvalidEmailError:
             self.logger.debug(messages.USER_INVALID_EMAIL_ERROR_MESSAGE % content["email"])
@@ -266,7 +268,12 @@ class Controller:
         except UserNotFoundError:
             self.logger.debug(messages.USER_NOT_FOUND_MESSAGE % email_query)
             return messages.ERROR_JSON % (messages.USER_NOT_FOUND_MESSAGE % email_query), 404
-        self.database.update_user(user, content)
+        password = SecuredPassword.from_raw_password(content["password"]) if "password" in content else None
+        fullname = content["fullname"] if "fullname" in content else None
+        phone_numer = content["phone_number"] if "phone_number" in content else None
+        photo = Photo() if "photo" in content else None
+        self.database.update_user(user, password=password, fullname=fullname,
+                                  phone_number=phone_numer, photo=photo)
         return messages.SUCCESS_JSON, 200
 
 

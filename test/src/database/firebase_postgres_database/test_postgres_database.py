@@ -13,14 +13,15 @@ import pytest
 import firebase_admin
 import psycopg2
 from typing import NamedTuple
+from src.model.user import Photo
 import requests
 import os
 
 test_user = User(email="giancafferata@hotmail.com", fullname="Gianmarco Cafferata",
-                 phone_number="11 1111-1111", photo="", secured_password=SecuredPassword.from_raw_password("password"))
+                 phone_number="11 1111-1111", photo=Photo(), secured_password=SecuredPassword.from_raw_password("password"))
 
 test_user2 = User(email="jian01.cs@hotmail.com", fullname="Gianmarco Cafferata",
-                  phone_number="11 1111-1111", photo="", secured_password=SecuredPassword.from_raw_password("password"))
+                  phone_number="11 1111-1111", photo=Photo(), secured_password=SecuredPassword.from_raw_password("password"))
 
 test_recovery_token = UserRecoveryToken(email="giancafferata@hotmail.com", token="token",
                                         timestamp=datetime.datetime.now().isoformat())
@@ -118,13 +119,13 @@ def test_delete_user(postgres_firebase_database):
 
 def test_update_user(postgres_firebase_database):
     postgres_firebase_database.save_user(test_user)
-    postgres_firebase_database.update_user(test_user, {"password": "asd123"})
+    postgres_firebase_database.update_user(test_user, password=SecuredPassword.from_raw_password("asd123"))
     user = postgres_firebase_database.search_user("giancafferata@hotmail.com")
     assert user.get_secured_password_string() == SecuredPassword.from_raw_password("asd123").serialize()
-    postgres_firebase_database.update_user(test_user, {"fullname": "Pepe"})
+    postgres_firebase_database.update_user(test_user, fullname="Pepe")
     user = postgres_firebase_database.search_user("giancafferata@hotmail.com")
     assert user.fullname == "Pepe"
-    postgres_firebase_database.update_user(test_user, {"phone_number": "1111"})
+    postgres_firebase_database.update_user(test_user, phone_number="1111")
     user = postgres_firebase_database.search_user("giancafferata@hotmail.com")
     assert user.phone_number == "1111"
 
@@ -140,7 +141,7 @@ def test_save_user_not_found_in_firebase(monkeypatch, postgres_firebase_database
     def raise_not_found(*args, **kwargs):
         raise NotFoundError("")
     monkeypatch.setattr(firebase_admin.auth, "update_user", raise_not_found)
-    postgres_firebase_database.update_user(test_user, {"password": "asd123"})
+    postgres_firebase_database.update_user(test_user, password=SecuredPassword.from_raw_password("asd123"))
     monkeypatch.setattr(firebase_admin.auth, "update_user", lambda *args, **kwargs: None)
 
 def test_list_no_more_users(postgres_firebase_database):

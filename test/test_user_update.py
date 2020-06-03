@@ -5,13 +5,14 @@ import unittest
 import json
 from src.model.secured_password import SecuredPassword
 import os
+from src.model.photo import Photo
 
 class TestUserUpdate(unittest.TestCase):
     def setUp(self) -> None:
         os.environ["API_GENERATOR_SECRET"] = "secret string"
         self.app, self.controller = create_application(return_controller=True)
         admin_user = User(email="admin@admin.com", fullname="Admin",
-                          phone_number="11 1111-1111", photo="",
+                          phone_number="11 1111-1111", photo=Photo(),
                           secured_password=SecuredPassword.from_raw_password("admin"),
                           admin=True)
         self.controller.database.save_user(admin_user)
@@ -112,7 +113,6 @@ class TestUserUpdate(unittest.TestCase):
             self.assertEqual(response_json["email"], "caropistillo@gmail.com")
             self.assertEqual(response_json["fullname"], "Carolina Pistillo")
             self.assertEqual(response_json["phone_number"], "11 3263-7625")
-            self.assertEqual(response_json["photo"], "caro.jpg")
 
     def test_user_update_and_login(self):
         with self.app.test_client() as c:
