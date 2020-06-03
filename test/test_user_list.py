@@ -29,9 +29,8 @@ class TestUserList(unittest.TestCase):
 
     def test_list_unauthorized_if_no_authentication(self):
         with self.app.test_client() as c:
-            response = c.post('/user', data='{"email":"gcafferata@fi.uba.ar", "fullname":"Gianmarco Cafferata", '
-                                             '"phone_number":"11 1111-1111", "photo":"", "password":"asd123"}',
-                              headers={"Content-Type": "application/json"},
+            response = c.post('/user', data={"email":"gcafferata@fi.uba.ar", "fullname":"Gianmarco Cafferata",
+                                             "phone_number":"11 1111-1111", "password":"asd123"},
                               query_string={"api_key": self.api_key})
             self.assertEqual(response.status_code, 200)
             response = c.get('/registered_users', query_string={"users_per_page": 1, "page": 0,
@@ -40,9 +39,8 @@ class TestUserList(unittest.TestCase):
 
     def test_list_forbidden_if_not_admin(self):
         with self.app.test_client() as c:
-            response = c.post('/user', data='{"email":"gcafferata@fi.uba.ar", "fullname":"Gianmarco Cafferata", '
-                                             '"phone_number":"11 1111-1111", "photo":"", "password":"asd123"}',
-                              headers={"Content-Type": "application/json"},
+            response = c.post('/user', data={"email":"gcafferata@fi.uba.ar", "fullname":"Gianmarco Cafferata",
+                                             "phone_number":"11 1111-1111", "password":"asd123"},
                               query_string={"api_key": self.api_key})
             self.assertEqual(response.status_code, 200)
             response = c.post('/user/login', data='{"email":"gcafferata@fi.uba.ar", "password":"asd123"}',
@@ -56,9 +54,8 @@ class TestUserList(unittest.TestCase):
 
     def test_list_one_user(self):
         with self.app.test_client() as c:
-            response = c.post('/user', data='{"email":"gcafferata@fi.uba.ar", "fullname":"Gianmarco Cafferata", '
-                                             '"phone_number":"11 1111-1111", "photo":"", "password":"asd123"}',
-                              headers={"Content-Type": "application/json"},
+            response = c.post('/user', data={"email":"gcafferata@fi.uba.ar", "fullname":"Gianmarco Cafferata",
+                                             "phone_number":"11 1111-1111", "password":"asd123"},
                               query_string={"api_key": self.api_key})
             self.assertEqual(response.status_code, 200)
             response = c.get('/registered_users', query_string={"users_per_page": 1, "page": 0,
@@ -79,14 +76,12 @@ class TestUserList(unittest.TestCase):
 
     def test_list_for_no_more_users_error(self):
         with self.app.test_client() as c:
-            response = c.post('/user', data='{"email":"gcafferata@fi.uba.ar", "fullname":"Gianmarco Cafferata", '
-                                            '"phone_number":"11 1111-1111", "photo":"", "password":"asd123"}',
-                              headers={"Content-Type": "application/json"},
+            response = c.post('/user', data={"email":"gcafferata@fi.uba.ar", "fullname":"Gianmarco Cafferata",
+                                            "phone_number":"11 1111-1111", "password":"asd123"},
                               query_string={"api_key": self.api_key})
             self.assertEqual(response.status_code, 200)
-            response = c.post('/user', data='{"email":"cpistillo@fi.uba.ar", "fullname":"Carolina Pistillo", '
-                                            '"phone_number":"11 2222-2222", "photo":"", "password":"carolina"}',
-                              headers={"Content-Type": "application/json"},
+            response = c.post('/user', data={"email":"cpistillo@fi.uba.ar", "fullname":"Carolina Pistillo",
+                                            "phone_number":"11 2222-2222", "password":"carolina"},
                               query_string={"api_key": self.api_key})
             self.assertEqual(response.status_code, 200)
             response = c.get('/registered_users', query_string={"users_per_page": 2, "page": 2,
@@ -96,24 +91,20 @@ class TestUserList(unittest.TestCase):
 
     def test_list_ordered_by_email_and_paginated(self):
         with self.app.test_client() as c:
-            response = c.post('/user', data='{"email":"m@fi.uba.ar", "fullname":"Martha Nielsen", '
-                                            '"phone_number":"11 1111-1111", "photo":"", "password":"mn123"}',
-                              headers={"Content-Type": "application/json"},
+            response = c.post('/user', data={"email":"m@fi.uba.ar", "fullname":"Martha Nielsen",
+                                            "phone_number":"11 1111-1111", "password":"mn123"},
                               query_string={"api_key": self.api_key})
             self.assertEqual(response.status_code, 200)
-            response = c.post('/user', data='{"email":"a@fi.uba.ar", "fullname":"Adam Kahnwald", '
-                                            '"phone_number":"11 1111-1111", "photo":"", "password":"ak123"}',
-                              headers={"Content-Type": "application/json"},
+            response = c.post('/user', data={"email":"a@fi.uba.ar", "fullname":"Adam Kahnwald",
+                                            "phone_number":"11 1111-1111", "password":"ak123"},
                               query_string={"api_key": self.api_key})
             self.assertEqual(response.status_code, 200)
-            response = c.post('/user', data='{"email":"f@fi.uba.ar", "fullname":"Franciska Dopler", '
-                                            '"phone_number":"11 1111-1111", "photo":"", "password":"fd123"}',
-                              headers={"Content-Type": "application/json"},
+            response = c.post('/user', data={"email":"f@fi.uba.ar", "fullname":"Franciska Dopler",
+                                            "phone_number":"11 1111-1111", "password":"fd123"},
                               query_string={"api_key": self.api_key})
             self.assertEqual(response.status_code, 200)
-            response = c.post('/user', data='{"email":"u@fi.uba.ar", "fullname":"Ullrich Nielsen", '
-                                            '"phone_number":"11 1111-1111", "photo":"", "password":"un123"}',
-                              headers={"Content-Type": "application/json"},
+            response = c.post('/user', data={"email":"u@fi.uba.ar", "fullname":"Ullrich Nielsen",
+                                            "phone_number":"11 1111-1111", "password":"un123"},
                               query_string={"api_key": self.api_key})
             self.assertEqual(response.status_code, 200)
             response = c.get('/registered_users', query_string={"users_per_page": 3, "page": 0,

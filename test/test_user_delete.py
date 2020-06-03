@@ -44,9 +44,8 @@ class TestUserDelete(unittest.TestCase):
 
     def test_user_delete_success(self):
         with self.app.test_client() as c:
-            response = c.post('/user', data='{"email":"caropistillo@gmail.com", "password": "carolina15", "fullname":'
-                                 '"Carolina Rocio", "phone_number":"11 1111-1111", "photo":""}',
-                                                        headers={"Content-Type": "application/json"},
+            response = c.post('/user', data={"email":"caropistillo@gmail.com", "password": "carolina15", "fullname":
+                                 "Carolina Rocio", "phone_number":"11 1111-1111"},
                               query_string={"api_key": self.api_key})
             self.assertEqual(response.status_code, 200)
             response = c.delete('/user', query_string={"email": "caropistillo@gmail.com", "api_key": self.api_key},
@@ -55,9 +54,8 @@ class TestUserDelete(unittest.TestCase):
 
     def test_user_delete_myself_success(self):
         with self.app.test_client() as c:
-            response = c.post('/user', data='{"email":"caropistillo@gmail.com", "password": "carolina15", "fullname":'
-                                 '"Carolina Rocio", "phone_number":"11 1111-1111", "photo":""}',
-                                                        headers={"Content-Type": "application/json"},
+            response = c.post('/user', data={"email":"caropistillo@gmail.com", "password": "carolina15", "fullname":
+                                 "Carolina Rocio", "phone_number":"11 1111-1111"},
                               query_string={"api_key": self.api_key})
             self.assertEqual(response.status_code, 200)
 
@@ -72,9 +70,8 @@ class TestUserDelete(unittest.TestCase):
 
     def test_user_delete_and_login_non_existing_user_error(self):
         with self.app.test_client() as c:
-            response = c.post('/user', data='{"email":"caropistillo@gmail.com", "password": "carolina15", "fullname":'
-                                 '"Carolina Rocio", "phone_number":"11 1111-1111", "photo":""}',
-                                                        headers={"Content-Type": "application/json"},
+            response = c.post('/user', data={"email":"caropistillo@gmail.com", "password": "carolina15", "fullname":
+                            "Carolina Rocio", "phone_number":"11 1111-1111"},
                               query_string={"api_key": self.api_key})
             self.assertEqual(response.status_code, 200)
             response = c.delete('/user', query_string={"email": "caropistillo@gmail.com", "api_key": self.api_key},
@@ -87,9 +84,8 @@ class TestUserDelete(unittest.TestCase):
 
     def test_user_delete_and_query_non_existing_user_error(self):
         with self.app.test_client() as c:
-            response = c.post('/user', data='{"email":"caropistillo@gmail.com", "password": "carolina15", "fullname":'
-                                 '"Carolina Rocio", "phone_number":"11 1111-1111", "photo":""}',
-                                                        headers={"Content-Type": "application/json"},
+            response = c.post('/user', data={"email":"caropistillo@gmail.com", "password": "carolina15", "fullname":
+                                 "Carolina Rocio", "phone_number":"11 1111-1111"},
                               query_string={"api_key": self.api_key})
             self.assertEqual(response.status_code, 200)
             response = c.delete('/user', query_string={"email": "caropistillo@gmail.com", "api_key": self.api_key},
@@ -102,30 +98,27 @@ class TestUserDelete(unittest.TestCase):
 
     def test_user_delete_and_update_non_existing_user_error(self):
         with self.app.test_client() as c:
-            response = c.post('/user', data='{"email":"caropistillo@gmail.com", "password": "carolina15", "fullname":'
-                                 '"Carolina Rocio", "phone_number":"11 1111-1111", "photo":""}',
-                                                        headers={"Content-Type": "application/json"},
+            response = c.post('/user', data={"email":"caropistillo@gmail.com", "password": "carolina15", "fullname":
+                                 "Carolina Rocio", "phone_number":"11 1111-1111"},
                               query_string={"api_key": self.api_key})
             self.assertEqual(response.status_code, 200)
             response = c.delete('/user', query_string={"email": "caropistillo@gmail.com", "api_key": self.api_key},
                                 headers={"Authorization": "Bearer %s" % self.admin_token})
             self.assertEqual(response.status_code, 200)
             response = c.put('/user', query_string={"email": "caropistillo@gmail.com", "api_key": self.api_key},
-                             data='{"fullname":"Carolina Pistillo", "phone_number":"11 3263-7625", "photo":"caro.jpg", '
+                             data='{"fullname":"Carolina Pistillo", "phone_number":"11 3263-7625", '
                                   '"password":"carolina"}', headers={"Content-Type": "application/json",
                                                                      "Authorization": "Bearer %s" % self.admin_token})
             self.assertEqual(response.status_code, 404)
 
     def test_delete_for_other_not_allowed_error(self):
         with self.app.test_client() as c:
-            response = c.post('/user', data='{"email":"giancafferata@hotmail.com", "fullname":"Gianmarco Cafferata", '
-                                            '"phone_number":"11 1111-1111", "photo":"", "password":"asd123"}',
-                              headers={"Content-Type": "application/json"},
+            response = c.post('/user', data={"email":"giancafferata@hotmail.com", "fullname":"Gianmarco Cafferata",
+                                            "phone_number":"11 1111-1111", "password":"asd123"},
                               query_string={"api_key": self.api_key})
             self.assertEqual(response.status_code, 200)
-            response = c.post('/user', data='{"email":"gcafferata@fi.uba.ar", "fullname":"Gianmarco Cafferata", '
-                                            '"phone_number":"11 1111-1111", "photo":"", "password":"asd123"}',
-                              headers={"Content-Type": "application/json"},
+            response = c.post('/user', data={"email":"gcafferata@fi.uba.ar", "fullname":"Gianmarco Cafferata",
+                                            "phone_number":"11 1111-1111", "password":"asd123"},
                               query_string={"api_key": self.api_key})
             self.assertEqual(response.status_code, 200)
             response = c.post('/user/login', data='{"email":"gcafferata@fi.uba.ar", "password":"asd123"}',

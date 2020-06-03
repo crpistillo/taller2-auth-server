@@ -32,7 +32,7 @@ LOGIN_MANDATORY_FIELDS = {"email", "password"}
 API_KEY_CREATE_MANDATORY_FIELDS = {"alias", "secret"}
 RECOVER_PASSWORD_MANDATORY_FIELDS = {"email"}
 NEW_PASSWORD_MANDATORY_FIELDS = {"email", "new_password", "token"}
-USERS_REGISTER_MANDATORY_FIELDS = {"email", "password", "phone_number", "fullname", "photo"}
+USERS_REGISTER_MANDATORY_FIELDS = {"email", "password", "phone_number", "fullname"}
 
 
 class Controller:
@@ -193,12 +193,7 @@ class Controller:
         Handles the user registration
         :return: a json with a success message on success or an error in another case
         """
-        try:
-            assert request.is_json
-        except AssertionError:
-            self.logger.debug(messages.REQUEST_IS_NOT_JSON)
-            return messages.ERROR_JSON % messages.REQUEST_IS_NOT_JSON, 400
-        content = request.get_json()
+        content = request.form
         if not USERS_REGISTER_MANDATORY_FIELDS.issubset(content.keys()):
             self.logger.debug(messages.MISSING_FIELDS_ERROR)
             return messages.ERROR_JSON % messages.MISSING_FIELDS_ERROR, 400
@@ -210,6 +205,8 @@ class Controller:
         secured_password = SecuredPassword.from_raw_password(content["password"])
         try:
             photo = Photo()
+            if 'photo' in request.files:
+                photo = Photo.from_bytes(request.files['photo'].stream)
             user = User(email=content["email"], fullname=content["fullname"],
                         phone_number=content["phone_number"], photo=photo,
                         secured_password=secured_password)

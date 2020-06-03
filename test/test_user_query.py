@@ -48,9 +48,8 @@ class TestUserQuery(unittest.TestCase):
 
     def test_query_for_inexistent_user_after_registering_valid(self):
         with self.app.test_client() as c:
-            response = c.post('/user', data='{"email":"giancafferata@hotmail.com", "fullname":"Gianmarco Cafferata", '
-                                             '"phone_number":"11 1111-1111", "photo":"", "password":"asd123"}',
-                              headers={"Content-Type": "application/json"},
+            response = c.post('/user', data={"email":"giancafferata@hotmail.com", "fullname":"Gianmarco Cafferata",
+                                             "phone_number":"11 1111-1111", "password":"asd123"},
                               query_string={"api_key": self.api_key})
             self.assertEqual(response.status_code, 200)
             response = c.post('/user/login', data='{"email":"admin@admin.com", "password":"admin"}',

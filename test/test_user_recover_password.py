@@ -21,14 +21,12 @@ class TestUserRecoverPassword(unittest.TestCase):
             response = c.post('/api_key', data='{"alias":"test", "secret": "secret string"}',
                               headers={"Content-Type": "application/json"})
             self.api_key = json.loads(response.data)["api_key"]
-            response = c.post('/user', data='{"email":"giancafferata@hotmail.com", "fullname":"Gianmarco Cafferata", '
-                                             '"phone_number":"11 1111-1111", "photo":"", "password":"asd123"}',
-                              headers={"Content-Type": "application/json"},
+            response = c.post('/user', data={"email":"giancafferata@hotmail.com", "fullname":"Gianmarco Cafferata",
+                                             "phone_number":"11 1111-1111", "password":"asd123"},
                               query_string={"api_key": self.api_key})
             response = c.post('/user',
-                              data='{"email":"cpistillo@fi.uba.ar", "fullname":"Carolina Pistillo", '
-                                   '"phone_number":"11 1111-1111", "photo":"", "password":"carolina"}',
-                              headers={"Content-Type": "application/json"},
+                              data={"email":"cpistillo@fi.uba.ar", "fullname":"Carolina Pistillo",
+                                   "phone_number":"11 1111-1111", "password":"carolina"},
                               query_string={"api_key": self.api_key})
             response = c.post('/user/login', data='{"email":"admin@admin.com", "password":"admin"}',
                               headers={"Content-Type": "application/json"},

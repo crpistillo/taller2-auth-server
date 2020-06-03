@@ -48,7 +48,7 @@ class TestUserUpdate(unittest.TestCase):
     def test_user_update_for_non_existing_user_error(self):
         with self.app.test_client() as c:
             response = c.put('/user', query_string={"email": "caropistillo@gmail.com", "api_key": self.api_key},
-                             data='{"fullname":"Carolina Pistillo", "phone_number":"11 1111-1111", "photo":"", '
+                             data='{"fullname":"Carolina Pistillo", "phone_number":"11 1111-1111", '
                                 '"password":"carolina"}',
                              headers={"Content-Type": "application/json",
                                       "Authorization": "Bearer %s" % self.admin_token})
@@ -56,13 +56,12 @@ class TestUserUpdate(unittest.TestCase):
 
     def test_user_update_success(self):
         with self.app.test_client() as c:
-            response = c.post('/user', data='{"email":"caropistillo@gmail.com", "password": "carolina15", "fullname":'
-                                 '"Carolina Rocio", "phone_number":"11 1111-1111", "photo":""}',
-                                                        headers={"Content-Type": "application/json"},
+            response = c.post('/user', data={"email":"caropistillo@gmail.com", "password": "carolina15", "fullname":
+                                 "Carolina Rocio", "phone_number":"11 1111-1111"},
                               query_string={"api_key": self.api_key})
             self.assertEqual(response.status_code, 200)
             response = c.put('/user', query_string={"email": "caropistillo@gmail.com", "api_key": self.api_key},
-                             data='{"fullname":"Carolina Pistillo", "phone_number":"11 3263-7625", "photo":"caro.jpg", '
+                             data='{"fullname":"Carolina Pistillo", "phone_number":"11 3263-7625", '
                                 '"password":"carolina"}',
                              headers={"Content-Type": "application/json",
                                       "Authorization": "Bearer %s" % self.admin_token})
@@ -70,9 +69,8 @@ class TestUserUpdate(unittest.TestCase):
 
     def test_user_update_myself_success(self):
         with self.app.test_client() as c:
-            response = c.post('/user', data='{"email":"caropistillo@gmail.com", "password": "carolina15", "fullname":'
-                                 '"Carolina Rocio", "phone_number":"11 1111-1111", "photo":""}',
-                                                        headers={"Content-Type": "application/json"},
+            response = c.post('/user', data={"email":"caropistillo@gmail.com", "password": "carolina15", "fullname":
+                                 "Carolina Rocio", "phone_number":"11 1111-1111"},
                               query_string={"api_key": self.api_key})
             self.assertEqual(response.status_code, 200)
 
@@ -82,7 +80,7 @@ class TestUserUpdate(unittest.TestCase):
             my_token = json.loads(response.data)["login_token"]
 
             response = c.put('/user', query_string={"email": "caropistillo@gmail.com", "api_key": self.api_key},
-                             data='{"fullname":"Carolina Pistillo", "phone_number":"11 3263-7625", "photo":"caro.jpg", '
+                             data='{"fullname":"Carolina Pistillo", "phone_number":"11 3263-7625", '
                                 '"password":"carolina"}',
                              headers={"Content-Type": "application/json",
                                       "Authorization": "Bearer %s" % my_token})
@@ -90,13 +88,12 @@ class TestUserUpdate(unittest.TestCase):
 
     def test_user_update_and_query(self):
         with self.app.test_client() as c:
-            response = c.post('/user', data='{"email":"caropistillo@gmail.com", "password": "carolina15", "fullname":'
-                                 '"Carolina Rocio", "phone_number":"11 1111-1111", "photo":""}',
-                                                        headers={"Content-Type": "application/json"},
+            response = c.post('/user', data={"email":"caropistillo@gmail.com", "password": "carolina15", "fullname":
+                                 "Carolina Rocio", "phone_number":"11 1111-1111"},
                               query_string={"api_key": self.api_key})
             self.assertEqual(response.status_code, 200)
             response = c.put('/user', query_string={"email": "caropistillo@gmail.com", "api_key": self.api_key},
-                             data='{"fullname":"Carolina Pistillo", "phone_number":"11 3263-7625", "photo":"caro.jpg", '
+                             data='{"fullname":"Carolina Pistillo", "phone_number":"11 3263-7625", '
                                 '"password":"carolina"}', headers={"Content-Type": "application/json",
                                                                    "Authorization": "Bearer %s" % self.admin_token})
             self.assertEqual(response.status_code, 200)
@@ -116,13 +113,12 @@ class TestUserUpdate(unittest.TestCase):
 
     def test_user_update_and_login(self):
         with self.app.test_client() as c:
-            response = c.post('/user', data='{"email":"caropistillo@gmail.com", "password": "carolina15", "fullname":'
-                                 '"Carolina Rocio", "phone_number":"11 1111-1111", "photo":""}',
-                                                        headers={"Content-Type": "application/json"},
+            response = c.post('/user', data={"email":"caropistillo@gmail.com", "password": "carolina15", "fullname":
+                                 "Carolina Rocio", "phone_number":"11 1111-1111"},
                               query_string={"api_key": self.api_key})
             self.assertEqual(response.status_code, 200)
             response = c.put('/user', query_string={"email": "caropistillo@gmail.com", "api_key": self.api_key},
-                             data='{"fullname":"Carolina Pistillo", "phone_number":"11 3263-7625", "photo":"caro.jpg", '
+                             data='{"fullname":"Carolina Pistillo", "phone_number":"11 3263-7625", '
                                 '"password":"carolina"}', headers={"Content-Type": "application/json",
                                                                    "Authorization": "Bearer %s" % self.admin_token})
             self.assertEqual(response.status_code, 200)
@@ -133,14 +129,12 @@ class TestUserUpdate(unittest.TestCase):
 
     def test_update_for_other_not_allowed_error(self):
         with self.app.test_client() as c:
-            response = c.post('/user', data='{"email":"giancafferata@hotmail.com", "fullname":"Gianmarco Cafferata", '
-                                             '"phone_number":"11 1111-1111", "photo":"", "password":"asd123"}',
-                              headers={"Content-Type": "application/json"},
+            response = c.post('/user', data={"email":"giancafferata@hotmail.com", "fullname":"Gianmarco Cafferata",
+                                             "phone_number":"11 1111-1111", "password":"asd123"},
                               query_string={"api_key": self.api_key})
             self.assertEqual(response.status_code, 200)
-            response = c.post('/user', data='{"email":"gcafferata@fi.uba.ar", "fullname":"Gianmarco Cafferata", '
-                                             '"phone_number":"11 1111-1111", "photo":"", "password":"asd123"}',
-                              headers={"Content-Type": "application/json"},
+            response = c.post('/user', data={"email":"gcafferata@fi.uba.ar", "fullname":"Gianmarco Cafferata",
+                                             "phone_number":"11 1111-1111", "password":"asd123"},
                               query_string={"api_key": self.api_key})
             self.assertEqual(response.status_code, 200)
             response = c.post('/user/login', data='{"email":"gcafferata@fi.uba.ar", "password":"asd123"}',
