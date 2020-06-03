@@ -345,7 +345,10 @@ class PostgresFirebaseDatabase(Database):
         :param timestamp: the date and time when the api call happened
         """
         cursor = self.conn.cursor()
-        query = SAVE_API_CALL % (self.api_calls_table_name, api_key_str,
+        query = CHECK_API_KEY % (self.api_key_table_name, api_key_str)
+        cursor.execute(query)
+        api_alias = cursor.fetchone()[1]
+        query = SAVE_API_CALL % (self.api_calls_table_name, api_alias,
                                  path, status, timestamp.isoformat())
         cursor.execute(query)
         self.conn.commit()
