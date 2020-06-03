@@ -32,13 +32,6 @@ class TestUserUpdate(unittest.TestCase):
                                                     "api_key": self.api_key}, data='')
             self.assertEqual(response.status_code, 401)
 
-    def test_user_update_no_json(self):
-        with self.app.test_client() as c:
-            response = c.put('/user', query_string={"email": "caropistillo@gmail.com",
-                                                    "api_key": self.api_key}, data='',
-                             headers={"Authorization": "Bearer %s" % self.admin_token})
-            self.assertEqual(response.status_code, 400)
-
     def test_user_update_for_missing_fields_error(self):
         with self.app.test_client() as c:
             response = c.put('/user', query_string={"fullname": "Carolina", "api_key": self.api_key},
@@ -48,10 +41,9 @@ class TestUserUpdate(unittest.TestCase):
     def test_user_update_for_non_existing_user_error(self):
         with self.app.test_client() as c:
             response = c.put('/user', query_string={"email": "caropistillo@gmail.com", "api_key": self.api_key},
-                             data='{"fullname":"Carolina Pistillo", "phone_number":"11 1111-1111", '
-                                '"password":"carolina"}',
-                             headers={"Content-Type": "application/json",
-                                      "Authorization": "Bearer %s" % self.admin_token})
+                             data={"fullname":"Carolina Pistillo", "phone_number":"11 1111-1111",
+                                "password":"carolina"},
+                             headers={"Authorization": "Bearer %s" % self.admin_token})
             self.assertEqual(response.status_code, 404)
 
     def test_user_update_success(self):
@@ -61,10 +53,9 @@ class TestUserUpdate(unittest.TestCase):
                               query_string={"api_key": self.api_key})
             self.assertEqual(response.status_code, 200)
             response = c.put('/user', query_string={"email": "caropistillo@gmail.com", "api_key": self.api_key},
-                             data='{"fullname":"Carolina Pistillo", "phone_number":"11 3263-7625", '
-                                '"password":"carolina"}',
-                             headers={"Content-Type": "application/json",
-                                      "Authorization": "Bearer %s" % self.admin_token})
+                             data={"fullname":"Carolina Pistillo", "phone_number":"11 3263-7625",
+                                "password":"carolina"},
+                             headers={"Authorization": "Bearer %s" % self.admin_token})
             self.assertEqual(response.status_code, 200)
 
     def test_user_update_myself_success(self):
@@ -80,10 +71,9 @@ class TestUserUpdate(unittest.TestCase):
             my_token = json.loads(response.data)["login_token"]
 
             response = c.put('/user', query_string={"email": "caropistillo@gmail.com", "api_key": self.api_key},
-                             data='{"fullname":"Carolina Pistillo", "phone_number":"11 3263-7625", '
-                                '"password":"carolina"}',
-                             headers={"Content-Type": "application/json",
-                                      "Authorization": "Bearer %s" % my_token})
+                             data={"fullname":"Carolina Pistillo", "phone_number":"11 3263-7625",
+                                "password":"carolina"},
+                             headers={"Authorization": "Bearer %s" % my_token})
             self.assertEqual(response.status_code, 200)
 
     def test_user_update_and_query(self):
@@ -93,9 +83,8 @@ class TestUserUpdate(unittest.TestCase):
                               query_string={"api_key": self.api_key})
             self.assertEqual(response.status_code, 200)
             response = c.put('/user', query_string={"email": "caropistillo@gmail.com", "api_key": self.api_key},
-                             data='{"fullname":"Carolina Pistillo", "phone_number":"11 3263-7625", '
-                                '"password":"carolina"}', headers={"Content-Type": "application/json",
-                                                                   "Authorization": "Bearer %s" % self.admin_token})
+                             data={"fullname":"Carolina Pistillo", "phone_number":"11 3263-7625",
+                                "password":"carolina"}, headers={"Authorization": "Bearer %s" % self.admin_token})
             self.assertEqual(response.status_code, 200)
 
             response = c.post('/user/login', data='{"email":"caropistillo@gmail.com", "password":"carolina"}',
@@ -118,9 +107,8 @@ class TestUserUpdate(unittest.TestCase):
                               query_string={"api_key": self.api_key})
             self.assertEqual(response.status_code, 200)
             response = c.put('/user', query_string={"email": "caropistillo@gmail.com", "api_key": self.api_key},
-                             data='{"fullname":"Carolina Pistillo", "phone_number":"11 3263-7625", '
-                                '"password":"carolina"}', headers={"Content-Type": "application/json",
-                                                                   "Authorization": "Bearer %s" % self.admin_token})
+                             data={"fullname":"Carolina Pistillo", "phone_number":"11 3263-7625",
+                                "password":"carolina"}, headers={"Authorization": "Bearer %s" % self.admin_token})
             self.assertEqual(response.status_code, 200)
             response = c.post('/user/login', data='{"email":"caropistillo@gmail.com", "password": "carolina" }',
                               headers={"Content-Type": "application/json"},
@@ -143,7 +131,7 @@ class TestUserUpdate(unittest.TestCase):
             token = json.loads(response.data)["login_token"]
 
             response = c.put('/user', query_string={"email": "giancafferata@hotmail.com", "api_key": self.api_key},
-                             data='{"password":"carolina"}',
+                             data={"password":"carolina"},
                              headers={"Content-Type": "application/json",
                                       "Authorization": "Bearer %s" % token})
             self.assertEqual(response.status_code, 403)

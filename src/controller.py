@@ -254,12 +254,7 @@ class Controller:
         if email_query != auth.current_user().get_email() and not auth.current_user().is_admin():
             self.logger.debug(messages.USER_NOT_AUTHORIZED_ERROR)
             return messages.ERROR_JSON % messages.USER_NOT_AUTHORIZED_ERROR, 403
-        try:
-            assert request.is_json
-        except AssertionError:
-            self.logger.debug(messages.REQUEST_IS_NOT_JSON)
-            return messages.ERROR_JSON % messages.REQUEST_IS_NOT_JSON, 400
-        content = request.get_json()
+        content = request.form
         try:
             user = self.database.search_user(email_query)
         except UserNotFoundError:
@@ -268,7 +263,9 @@ class Controller:
         password = SecuredPassword.from_raw_password(content["password"]) if "password" in content else None
         fullname = content["fullname"] if "fullname" in content else None
         phone_numer = content["phone_number"] if "phone_number" in content else None
-        photo = Photo() if "photo" in content else None
+        photo = Photo()
+        if 'photo' in request.files:
+            photo = Photo.from_bytes(request.files['photo'].stream)
         self.database.update_user(user, password=password, fullname=fullname,
                                   phone_number=phone_numer, photo=photo)
         return messages.SUCCESS_JSON, 200
