@@ -73,10 +73,11 @@ SELECT COUNT(*) FROM %s
 """
 
 API_KEY_INSERT_OR_UPDATE = """
-INSERT INTO %s (alias, api_key)
-VALUES ('%s', '%s')
+INSERT INTO %s (alias, api_key, health_endpoint)
+VALUES ('%s', '%s', '%s')
 ON CONFLICT (alias) DO UPDATE 
   SET api_key = excluded.api_key
+  SET health_endpoint = excluded.health_endpoint
 """
 
 CHECK_API_KEY = """
@@ -315,7 +316,8 @@ class PostgresFirebaseDatabase(Database):
         """
         cursor = self.conn.cursor()
         query = API_KEY_INSERT_OR_UPDATE % (self.api_key_table_name,
-                                            api_key.get_alias(), api_key.get_api_key_hash())
+                                            api_key.get_alias(), api_key.get_api_key_hash(),
+                                            api_key.health_endpoint)
         cursor.execute(query)
         self.conn.commit()
         cursor.close()
