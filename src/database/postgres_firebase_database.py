@@ -80,7 +80,7 @@ ON CONFLICT (alias) DO UPDATE
 """
 
 CHECK_API_KEY = """
-SELECT api_key 
+SELECT alias 
 FROM %s 
 WHERE api_key='%s'
 """
@@ -347,7 +347,7 @@ class PostgresFirebaseDatabase(Database):
         cursor = self.conn.cursor()
         query = CHECK_API_KEY % (self.api_key_table_name, api_key_str)
         cursor.execute(query)
-        api_alias = cursor.fetchone()[1]
+        api_alias = cursor.fetchone()[0]
         query = SAVE_API_CALL % (self.api_calls_table_name, api_alias,
                                  path, status, timestamp.isoformat())
         cursor.execute(query)
