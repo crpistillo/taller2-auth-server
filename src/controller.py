@@ -350,7 +350,9 @@ class Controller:
         if not content["secret"] == self.api_key_secret_generator:
             self.logger.debug(messages.API_KEY_SECRET_INVALID)
             return messages.ERROR_JSON % messages.API_KEY_SECRET_INVALID, 403
-        api_key = ApiKey(content["alias"])
+        health_endpoint = "" if not "health_endpoint" in content else content["health_endpoint"]
+        api_key = ApiKey(content["alias"], self.api_key_secret_generator,
+                         health_endpoint)
         self.database.save_api_key(api_key)
         return json.dumps({"api_key": api_key.get_api_key_hash()}), 200
 
