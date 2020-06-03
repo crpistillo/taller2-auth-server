@@ -15,7 +15,7 @@ class SerializedUser(NamedTuple):
     @classmethod
     def from_user(cls, user: User) -> 'SerializedUser':
         return SerializedUser(email=user.get_email(),fullname=user.fullname,
-                              phone_number=user.phone_number, photo=user.photo,
+                              phone_number=user.phone_number, photo=user.photo.get_base64(),
                               admin=user.is_admin(),
                               password=user.get_secured_password_string())
 

@@ -86,4 +86,3 @@ class TestUserRegistration(unittest.TestCase):
             self.assertEqual(response_json["email"], "giancafferata@hotmail.com")
             self.assertEqual(response_json["fullname"], "Gianmarco Cafferata")
             self.assertEqual(response_json["phone_number"], "11 1111-1111")
-            self.assertEqual(response_json["photo"], "")

@@ -4,6 +4,7 @@ from src.model.secured_password import SecuredPassword
 import unittest
 import json
 from unittest import mock
+from src.model.photo import Photo
 import os
 
 class TestUserRecoverPassword(unittest.TestCase):
@@ -11,7 +12,7 @@ class TestUserRecoverPassword(unittest.TestCase):
         os.environ["API_GENERATOR_SECRET"] = "secret string"
         self.app, self.controller = create_application(return_controller=True)
         admin_user = User(email="admin@admin.com", fullname="Admin",
-                          phone_number="11 1111-1111", photo="",
+                          phone_number="11 1111-1111", photo=Photo(),
                           secured_password=SecuredPassword.from_raw_password("admin"),
                           admin=True)
         self.controller.database.save_user(admin_user)

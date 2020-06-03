@@ -5,6 +5,7 @@ from src.model.user import User
 from src.model.user_recovery_token import UserRecoveryToken
 from src.model.secured_password import SecuredPassword
 import sendgrid
+from src.model.photo import Photo
 import os
 
 
@@ -12,7 +13,7 @@ class TestEmailService(unittest.TestCase):
     def setUp(self) -> None:
         secured_password = SecuredPassword.from_raw_password("password")
         self.test_user = User(email="giancafferata@hotmail.com", fullname="Gianmarco Cafferata",
-                              phone_number="11 1111-1111", photo="", secured_password=secured_password)
+                              phone_number="11 1111-1111", photo=Photo(), secured_password=secured_password)
         self.recovery_token = UserRecoveryToken.from_user(self.test_user, "dummy")
 
     @mock.patch('sendgrid.SendGridAPIClient.send')

@@ -10,6 +10,7 @@ from src.database.exceptions.user_recovery_token_not_found_error import UserReco
 from src.database.exceptions.invalid_login_token import InvalidLoginToken
 from src.database.exceptions.no_more_users import NoMoreUsers
 from src.model.api_key import ApiKey
+from src.model.photo import Photo
 import logging
 import hashlib
 from operator import itemgetter
@@ -57,7 +58,7 @@ class RamDatabase(Database):
         serialized_user = self.serialized_users[email]
         secured_password = SecuredPassword(serialized_user.password)
         return User(email=serialized_user.email, fullname=serialized_user.fullname,
-                    phone_number=serialized_user.phone_number, photo=serialized_user.photo,
+                    phone_number=serialized_user.phone_number, photo=Photo(serialized_user.photo),
                     secured_password=secured_password, admin=serialized_user.admin)
 
     def login(self, user: User) -> str:

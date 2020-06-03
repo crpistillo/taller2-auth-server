@@ -112,7 +112,7 @@ create table chotuve.users
 	email varchar,
 	fullname varchar,
 	phone_number varchar,
-	photo bytea,
+	photo varchar,
     admin boolean,
 	password varchar
 );

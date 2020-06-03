@@ -16,6 +16,7 @@ from firebase_admin import credentials
 from firebase_admin.exceptions import NotFoundError
 from src.database.exceptions.invalid_login_token import InvalidLoginToken
 from src.model.api_key import ApiKey
+from src.model.photo import Photo
 import logging
 import os
 import json
@@ -178,7 +179,7 @@ class PostgresFirebaseDatabase(Database):
         cursor.close()
         #TODO: return the actual photo
         return User(email=result[0], fullname=result[1],
-                    phone_number=result[2], photo="",
+                    phone_number=result[2], photo=Photo(result[3]),
                     secured_password=secured_password,
                     admin=result[5])
 

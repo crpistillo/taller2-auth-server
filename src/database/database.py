@@ -5,7 +5,8 @@ from src.model.user_recovery_token import UserRecoveryToken
 from src.model.secured_password import SecuredPassword
 from src.database.serialized.serialized_user import SerializedUser
 from src.model.api_key import ApiKey
-from typing import List
+from typing import List, Optional
+from src.model.photo import Photo
 from datetime import datetime
 
 class Database:
@@ -80,21 +81,27 @@ class Database:
         :param email: the email of the user to be deleted
         """
 
-    def update_user(self, user: User, update_data) -> NoReturn:
+    def update_user(self, user: User, password: Optional[SecuredPassword] = None,
+                    fullname: Optional[str] = None,
+                    phone_number: Optional[str] = None,
+                    photo: Optional[Photo] = None) -> NoReturn:
         """
         Updates a user
 
         :param user: the user to update
-        :param update_data: the parameters to update
+        :param password: the password to update
+        :param fullname: the full name to update
+        :param phone_number: phone number to update
+        :param photo: the photo to update
         """
-        if "password" in update_data:
-            user.set_password(SecuredPassword.from_raw_password(update_data["password"]))
-        if "fullname" in update_data:
-            user.set_fullname(update_data["fullname"])
-        if "phone_number" in update_data:
-            user.set_phone_number(update_data["phone_number"])
-        if "photo" in update_data:
-            user.set_photo(update_data["photo"])
+        if password:
+            user.set_password(password)
+        if fullname:
+            user.set_fullname(fullname)
+        if phone_number:
+            user.set_phone_number(phone_number)
+        if photo:
+            user.set_photo(photo)
 
         self.save_user(user)
 

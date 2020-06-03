@@ -5,6 +5,7 @@ from src.database.exceptions.invalid_login_token import InvalidLoginToken
 from src.model.user import User
 from src.model.secured_password import SecuredPassword
 from src.database.serialized.serialized_user import SerializedUser
+from src.model.photo import Photo
 from src.model.user_recovery_token import UserRecoveryToken
 import datetime
 
@@ -14,7 +15,7 @@ class TestRamDatabase(unittest.TestCase):
         self.ram_database = RamDatabase()
         secured_password = SecuredPassword.from_raw_password("password")
         self.test_user = User(email="giancafferata@hotmail.com", fullname="Gianmarco Cafferata",
-                              phone_number="11 1111-1111", photo="", secured_password=secured_password)
+                              phone_number="11 1111-1111", photo=Photo(), secured_password=secured_password)
 
     def test_user_does_not_exist_raises_error(self):
         with self.assertRaises(UserNotFoundError):
@@ -40,7 +41,7 @@ class TestRamDatabase(unittest.TestCase):
 
         secured_password = SecuredPassword.from_raw_password("password")
         test_user2 = User(email="giancafferata@hotmail.com", fullname="Gianmarco Cafferata",
-                          phone_number="11 2222-2222", photo="", secured_password=secured_password)
+                          phone_number="11 2222-2222", photo=Photo(), secured_password=secured_password)
         self.ram_database.save_user(test_user2)
 
         result_user = self.ram_database.search_user("giancafferata@hotmail.com")

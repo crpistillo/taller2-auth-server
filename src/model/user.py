@@ -1,6 +1,7 @@
 from .secured_password import SecuredPassword
 from .exceptions.invalid_phone_number_error import InvalidPhoneNumberError
 from .exceptions.invalid_email_error import InvalidEmailError
+from src.model.photo import Photo
 import re
 
 PHONE_NUMBER_REGEX = "\+?(\s|-|\d)+"
@@ -14,9 +15,9 @@ class User:
     email: str
     fullname: str
     phone_number: str
-    photo: str
+    photo: Photo
     secured_password: SecuredPassword
-    def __init__(self, email: str, fullname: str, phone_number: str, photo: str,
+    def __init__(self, email: str, fullname: str, phone_number: str, photo: Photo,
                  secured_password: SecuredPassword, admin: bool = False):
         """
         User initializer
@@ -24,10 +25,11 @@ class User:
         :param email: the email of the user
         :param fullname: the fullname of the user
         :param phone_number: the phone number of the user
-        :param photo: the photo as bytes
+        :param photo: the photo object
         :param admin: if the user is an admin
         :param secured_password: a SecuredPassword object
         """
+        assert isinstance(photo, Photo)
         if not re.fullmatch(PHONE_NUMBER_REGEX, phone_number, re.IGNORECASE):
             raise InvalidPhoneNumberError
         if not re.fullmatch(EMAIL_REGEX, email, re.IGNORECASE):
@@ -59,7 +61,7 @@ class User:
             raise InvalidPhoneNumberError
         self.phone_number = phone_number
 
-    def set_photo(self, photo: str):
+    def set_photo(self, photo: Photo):
         self.photo = photo
 
     def password_match(self, other: SecuredPassword) -> bool:
