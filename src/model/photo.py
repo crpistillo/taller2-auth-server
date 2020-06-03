@@ -44,18 +44,17 @@ class Photo:
         image = Image.open(photo)
         width, height = image.size
         ratio = width/height
-        if width < SQUARE_IMAGE_TARGET or height < SQUARE_IMAGE_TARGET:
-            if width < height:
-                image = image.resize((SQUARE_IMAGE_TARGET, ratio*SQUARE_IMAGE_TARGET), Image.ANTIALIAS)
-            else:
-                image = image.resize((SQUARE_IMAGE_TARGET/ratio, SQUARE_IMAGE_TARGET), Image.ANTIALIAS)
+        if width < height:
+            image = image.resize((SQUARE_IMAGE_TARGET, math.floor(SQUARE_IMAGE_TARGET/ratio)), Image.ANTIALIAS)
+        else:
+            image = image.resize((math.floor(SQUARE_IMAGE_TARGET*ratio), SQUARE_IMAGE_TARGET), Image.ANTIALIAS)
         width, height = image.size
         left, top, right, bottom = cls.get_target_crop_square(width, height, SQUARE_IMAGE_TARGET)
         image = image.crop((left, top, right, bottom))
         image = image.resize((SQUARE_IMAGE_TARGET, SQUARE_IMAGE_TARGET), Image.ANTIALIAS)
 
         buffered = BytesIO()
-        image.save(buffered, format="JPEG")
+        image.save(buffered, quality=90, format="JPEG")
         return cls(base64.b64encode(buffered.getvalue()))
 
     def get_base64(self) -> str:

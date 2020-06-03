@@ -1,5 +1,9 @@
 import unittest
 from src.model.photo import Photo
+from PIL import Image
+import base64
+from io import BytesIO
+import imagehash
 
 class TestUnitsPhoto(unittest.TestCase):
     def test_target_crop_big_image(self):
@@ -15,3 +19,17 @@ class TestUnitsPhoto(unittest.TestCase):
         self.assertEqual(right, 150)
         self.assertEqual(top, 0)
         self.assertEqual(bottom, 150)
+
+    def test_from_file_big_jpg(self):
+        with open("test_photos/big_jpg.jpg", "rb") as photo_file:
+            photo = Photo.from_bytes(BytesIO(photo_file.read()))
+        base64_img = photo.get_base64()
+        image = Image.open(BytesIO(base64.b64decode(base64_img)))
+        width, height = image.size
+        self.assertEqual(width, 200)
+        self.assertEqual(height, 200)
+        with open("test_photos/big_jpg_target.jpg", "rb") as photo_file:
+            target_image = Image.open(BytesIO(photo_file.read()))
+        hash0 = imagehash.average_hash(image)
+        hash1 = imagehash.average_hash(target_image)
+        self.assertEqual(hash0 - hash1, 0)
