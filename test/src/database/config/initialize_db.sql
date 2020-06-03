@@ -40,7 +40,8 @@ create table chotuve.api_keys
 	alias varchar
 		constraint api_keys_pk
 			primary key,
-	api_key varchar
+	api_key varchar,
+    health_endpoint varchar
 );
 
 create unique index api_keys_api_key_uindex
