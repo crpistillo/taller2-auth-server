@@ -9,6 +9,7 @@ from src.database.exceptions.user_not_found_error import UserNotFoundError
 from src.database.exceptions.user_recovery_token_not_found_error import UserRecoveryTokenNotFoundError
 from src.database.exceptions.invalid_login_token import InvalidLoginToken
 from src.database.exceptions.no_more_users import NoMoreUsers
+from src.model.api_calls_statistics import ApiCallsStatistics, ApiKeyCall
 from src.model.api_key import ApiKey
 from src.model.photo import Photo
 import logging
@@ -149,7 +150,7 @@ class RamDatabase(Database):
 
         :param api_key: the api key
         """
-        self.api_keys[api_key.get_api_key_hash()] = ApiKey
+        self.api_keys[api_key.get_api_key_hash()] = api_key
 
     def check_api_key(self, api_key_str: str) -> bool:
         """
@@ -159,17 +160,30 @@ class RamDatabase(Database):
         """
         return api_key_str in self.api_keys
 
-    def register_api_call(self, api_key_str: str, path: str,
+    def register_api_call(self, api_key_str: str, path: str, method: str,
                           status: int, time: float, timestamp: datetime):
         """
         Registers an api call made with an api key
 
         :param api_key_str: the api key code
         :param path: the url path
+        :param method: the method used
         :param status: the status code answer
         :param time: the time elapsed processing the api call
         :param timestamp: the date and time when the api call happened
         """
         if api_key_str not in self.api_calls:
             self.api_calls[api_key_str] = []
-        self.api_calls[api_key_str].append((path, status, time, timestamp))
+        self.api_calls[api_key_str].append((path, method, status, time, timestamp))
+
+    def get_api_calls_statistics(self) -> ApiCallsStatistics:
+        """
+        Computes the api call statistics
+
+        @return: an object containing the api call statistics
+        """
+        api_calls_tuples = []
+        for api_key in self.api_calls.keys():
+            api_calls_tuples += [ApiKeyCall(self.api_keys[api_key].get_alias(), *call)
+                                 for call in self.api_calls[api_key]]
+        return ApiCallsStatistics(api_calls_tuples)

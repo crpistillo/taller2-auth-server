@@ -56,6 +56,8 @@ create table chotuve.api_key_calls
 		constraint api_key_calls_api_keys_alias_fk
 			references chotuve.api_keys,
 	path varchar,
+    method varchar,
 	status int,
+    time float,
 	timestamp timestamp
 );

@@ -5,9 +5,10 @@ from src.model.user_recovery_token import UserRecoveryToken
 from src.model.secured_password import SecuredPassword
 from src.database.serialized.serialized_user import SerializedUser
 from src.model.api_key import ApiKey
-from typing import List, Optional
+from typing import List, Optional, Dict
 from src.model.photo import Photo
 from datetime import datetime
+from src.model.api_calls_statistics import ApiCallsStatistics
 
 class Database:
     """
@@ -144,16 +145,25 @@ class Database:
         """
 
     @abstractmethod
-    def register_api_call(self, api_key_str: str, path: str,
+    def register_api_call(self, api_key_str: str, path: str, method: str,
                           status: int, time: float, timestamp: datetime):
         """
         Registers an api call made with an api key
 
         :param api_key_str: the api key code
         :param path: the url path
+        :param method: the method used
         :param status: the status code answer
         :param time: the time elapsed processing the api call
         :param timestamp: the date and time when the api call happened
+        """
+
+    @abstractmethod
+    def get_api_calls_statistics(self) -> ApiCallsStatistics:
+        """
+        Computes the api call statistics
+
+        @return: an object containing the api call statistics
         """
 
 

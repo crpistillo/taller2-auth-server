@@ -14,3 +14,5 @@ pytest-postgresql==2.3.0
 Flask-HTTPAuth==4.0.0
 Pillow==7.1.2
 imagehash==4.1.0
+bokeh==2.0.2
+numpy==1.18.4

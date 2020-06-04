@@ -4,8 +4,13 @@ from PIL import Image
 import base64
 from io import BytesIO
 import imagehash
+from src.model.exceptions.not_an_image_exception import NotAnImageException
 
 class TestUnitsPhoto(unittest.TestCase):
+    def test_base64_not_photo(self):
+        with self.assertRaises(NotAnImageException):
+            Photo("asd")
+
     def test_target_crop_big_image(self):
         left, top, right, bottom = Photo.get_target_crop_square(1000,1000,200)
         self.assertEqual(left, 400)

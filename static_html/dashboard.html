@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Bokeh includes-->
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-2.0.2.min.js"></script>
+	<script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-2.0.2.min.js"></script>
+	<script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-2.0.2.min.js"></script>
+	<script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-gl-2.0.2.min.js"></script>
+	<script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-api-2.0.2.min.js"></script>
+
+  </head>
+  <body>
+    <div>
+        <h1>Usage statistics</h1>
+        {% block body %}
+            {% for plot in plots %}
+                {% for part in plot %}
+                    {{part | safe}}
+                {% endfor %}
+            {% endfor %}
+        {% endblock %}
+    </div>
+  </body>
+</html>

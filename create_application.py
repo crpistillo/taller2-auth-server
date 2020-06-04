@@ -46,6 +46,7 @@ def create_application_with_controller(controller: Controller):
                                 "/user/login": {"origins": "*"},
                                 "/registered_users": {"origins": "*"},
                                 "/api_key": {"origins": "*"},
+                                "/server_statistics": {"origins": "*"},
                                 "/health": {"origins": "*"}})
 
     app.add_url_rule('/health', 'api_health', controller.api_health)
@@ -69,5 +70,6 @@ def create_application_with_controller(controller: Controller):
                      methods=["GET"])
     app.add_url_rule('/api_key', 'new_api_key', controller.new_api_key,
                      methods=["POST"])
+    app.add_url_rule('/server_statistics', 'show_statistics', controller.show_statistics)
 
     return app

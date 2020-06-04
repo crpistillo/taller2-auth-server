@@ -1,7 +1,7 @@
 import json
 import logging
 from logging import Logger
-from typing import Optional, Callable
+from typing import Optional, Callable, List, Tuple, Any
 from .constants import messages
 from .database.database import Database
 from .database.exceptions.user_recovery_token_not_found_error import UserRecoveryTokenNotFoundError
@@ -22,6 +22,10 @@ from timeit import default_timer as timer
 from functools import partial
 from src.model.api_key import ApiKey
 from src.model.photo import Photo
+from flask import render_template_string
+from bokeh.plotting import figure
+from bokeh.embed import components
+from src.model.api_calls_statistics import ApiCallsStatistics
 import datetime
 import os
 
@@ -88,7 +92,8 @@ class Controller:
             if database.check_api_key(api_key):
                 start = timer()
                 result = func()
-                database.register_api_call(api_key, request.path, result.status_code, timer()-start, datetime.datetime.now())
+                database.register_api_call(api_key, request.path, request.method, result.status_code,
+                                           timer()-start, datetime.datetime.now())
                 return result
             else:
                 logger.debug(messages.API_KEY_INVALID)
@@ -355,6 +360,39 @@ class Controller:
                          health_endpoint)
         self.database.save_api_key(api_key)
         return json.dumps({"api_key": api_key.get_api_key_hash()}), 200
+
+    @cross_origin()
+    def show_statistics(self):
+        """
+        Show server statistics
+        """
+        plots = []
+        api_calls_statistics = self.database.get_api_calls_statistics()
+        plots += self.median_response_time_plot(api_calls_statistics)
+        with open('static_html/dashboard.html', 'r') as template_file:
+            template = template_file.read()
+        return render_template_string(template, plots=plots)
+
+    @staticmethod
+    def median_response_time_plot(api_calls_statistics: ApiCallsStatistics) -> List[Tuple[Any, Any]]:
+        """
+        Returns a rendered line plot of median response time
+
+        @param api_calls_statistics: the api call statistics
+        @return: rendered plot
+        """
+        plots = []
+        median_response_statistics = api_calls_statistics.median_response_time_last_30_days()
+        for api_alias in median_response_statistics.keys():
+            dict_items = median_response_statistics[api_alias].items()
+            plot = figure(plot_height=100, sizing_mode='scale_width',
+                          title="Median response time from 30 days ago (0) to today (30) for '%s' server" % api_alias)
+            x = [k for k,_ in dict_items]
+            y = [v for _,v in dict_items]
+            x = [((i+30) % 30) if i!=30 else 30 for i in x]
+            plot.line(x, y, line_width=4)
+            plots.append(components(plot))
+        return plots
 
     @cross_origin()
     def api_health(self):

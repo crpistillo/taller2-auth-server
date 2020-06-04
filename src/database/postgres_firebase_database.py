@@ -15,6 +15,7 @@ from firebase_admin.auth import InvalidIdTokenError, ExpiredIdTokenError, Revoke
 from firebase_admin import credentials
 from firebase_admin.exceptions import NotFoundError
 from src.database.exceptions.invalid_login_token import InvalidLoginToken
+from src.model.api_calls_statistics import ApiCallsStatistics, ApiKeyCall
 from src.model.api_key import ApiKey
 from src.model.photo import Photo
 from psycopg2.sql import Identifier, SQL
@@ -89,8 +90,14 @@ WHERE api_key='%s'
 """
 
 SAVE_API_CALL = """
-INSERT INTO %s (alias, path, status, timestamp)
-VALUES ('%s', '%s', '%d', '%s')
+INSERT INTO %s (alias, path, method, status, time, timestamp)
+VALUES ('%s', '%s', '%s', '%d', '%f', '%s')
+"""
+
+GET_ALL_30_DAYS_API_CALLS = """
+SELECT alias, path, method, status, time, timestamp
+FROM %s
+WHERE timestamp > NOW() - INTERVAL '30 days';
 """
 
 class PostgresFirebaseDatabase(Database):
@@ -317,6 +324,7 @@ class PostgresFirebaseDatabase(Database):
 
         :param api_key: the api key
         """
+        self.logger.debug("Saving api key for alias %s" % api_key.get_alias())
         cursor = self.conn.cursor()
         query = API_KEY_INSERT_OR_UPDATE % (self.api_key_table_name,
                                             api_key.get_alias(), api_key.get_api_key_hash(),
@@ -331,6 +339,7 @@ class PostgresFirebaseDatabase(Database):
 
         :param api_key_str: the api key code
         """
+        self.logger.debug("Checking if api key is valid")
         cursor = self.conn.cursor()
         query = CHECK_API_KEY % (self.api_key_table_name, api_key_str)
         cursor.execute(query)
@@ -338,13 +347,14 @@ class PostgresFirebaseDatabase(Database):
         cursor.close()
         return api_key_valid
 
-    def register_api_call(self, api_key_str: str, path: str,
+    def register_api_call(self, api_key_str: str, path: str, method: str,
                           status: int, time: float, timestamp: datetime):
         """
         Registers an api call made with an api key
 
         :param api_key_str: the api key code
         :param path: the url path
+        :param method: the method used
         :param status: the status code answer
         :param time: the time elapsed processing the api call
         :param timestamp: the date and time when the api call happened
@@ -353,9 +363,23 @@ class PostgresFirebaseDatabase(Database):
         query = CHECK_API_KEY % (self.api_key_table_name, api_key_str)
         cursor.execute(query)
         api_alias = cursor.fetchone()[0]
+        self.logger.debug("Saving api call from %s" % api_alias)
         query = SAVE_API_CALL % (self.api_calls_table_name, api_alias,
-                                 path, status, timestamp.isoformat())
+                                 path, method, status, time, timestamp.isoformat())
         cursor.execute(query)
         self.conn.commit()
         cursor.close()
 
+    def get_api_calls_statistics(self) -> ApiCallsStatistics:
+        """
+        Computes the api call statistics
+
+        @return: an object containing the api call statistics
+        """
+        cursor = self.conn.cursor()
+        cursor.execute(GET_ALL_30_DAYS_API_CALLS % self.api_calls_table_name)
+        result = cursor.fetchall()
+        result = [ApiKeyCall(*r)
+                  for r in result]
+        cursor.close()
+        return ApiCallsStatistics(result)

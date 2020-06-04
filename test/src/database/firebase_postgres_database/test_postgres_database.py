@@ -16,6 +16,8 @@ from typing import NamedTuple
 from src.model.user import Photo
 import requests
 import os
+from src.model.api_calls_statistics import ApiCallsStatistics, ApiKeyCall
+from src.model.api_key import ApiKey
 from io import BytesIO
 
 test_user = User(email="giancafferata@hotmail.com", fullname="Gianmarco Cafferata",
@@ -180,3 +182,13 @@ def test_user_with_photo(postgres_firebase_database):
     postgres_firebase_database.save_user(user_test)
     user = postgres_firebase_database.search_user("giancafferata@hotmail.com")
     assert user.get_email() == "giancafferata@hotmail.com"
+
+def test_api_key_call_save(postgres_firebase_database):
+    api_key = ApiKey("dumb", "dumb")
+    postgres_firebase_database.save_api_key(api_key)
+    postgres_firebase_database.register_api_call(api_key.get_api_key_hash(), "/user", "GET", 200, 0.1, datetime.datetime.now())
+    postgres_firebase_database.register_api_call(api_key.get_api_key_hash(), "/user", "GET", 200, 0.3, datetime.datetime.now())
+    api_call_statistics = postgres_firebase_database.get_api_calls_statistics()
+    median_response_dict = api_call_statistics.median_response_time_last_30_days()
+    assert "dumb" in median_response_dict
+    assert median_response_dict["dumb"][0] == 0.2
