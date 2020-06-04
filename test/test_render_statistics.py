@@ -14,10 +14,10 @@ class TestFlaskDummy(unittest.TestCase):
         self.controller.database.save_api_key(api_key1)
         self.controller.database.save_api_key(api_key2)
         for i in range(40):
-            self.controller.database.register_api_call(api_key1.get_api_key_hash(), "/user", "GET", 200, 0.1*i,
+            self.controller.database.register_api_call(api_key1.get_api_key_hash(), "/user", "GET" if i%2 == 0 else "POST", 200, 0.1*i,
                                                        datetime.now()-timedelta(days=i))
         for i in range(40):
-            self.controller.database.register_api_call(api_key2.get_api_key_hash(), "/user", "GET", 200, 0.1*i,
+            self.controller.database.register_api_call(api_key2.get_api_key_hash(), "/user", "GET" if i%2 == 0 else "POST", 200, 0.1*i,
                                                        datetime.now()-timedelta(days=i))
         self.app.testing = True
 

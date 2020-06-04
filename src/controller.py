@@ -1,7 +1,7 @@
 import json
 import logging
 from logging import Logger
-from typing import Optional, Callable, List, Tuple, Any
+from typing import Optional, Callable, List, Tuple, Any, Dict
 from .constants import messages
 from .database.database import Database
 from .database.exceptions.user_recovery_token_not_found_error import UserRecoveryTokenNotFoundError
@@ -25,6 +25,9 @@ from src.model.photo import Photo
 from flask import render_template_string
 from bokeh.plotting import figure
 from bokeh.embed import components
+from bokeh.models import ColumnDataSource
+from bokeh.layouts import row
+import math
 from src.model.api_calls_statistics import ApiCallsStatistics
 import datetime
 import os
@@ -368,20 +371,24 @@ class Controller:
         """
         plots = []
         api_calls_statistics = self.database.get_api_calls_statistics()
-        plots += self.median_response_time_plot(api_calls_statistics)
+        median_response_time_plots = self.median_response_time_plots(api_calls_statistics)
+        api_keys_by_call_plots = self.api_keys_by_call_plots(api_calls_statistics)
+        for api_alias in median_response_time_plots.keys():
+            plots += [median_response_time_plots[api_alias]]
+            plots += [api_keys_by_call_plots[api_alias]]
         with open('static_html/dashboard.html', 'r') as template_file:
             template = template_file.read()
         return render_template_string(template, plots=plots)
 
     @staticmethod
-    def median_response_time_plot(api_calls_statistics: ApiCallsStatistics) -> List[Tuple[Any, Any]]:
+    def median_response_time_plots(api_calls_statistics: ApiCallsStatistics) -> Dict[str, Tuple[Any, Any]]:
         """
-        Returns a rendered line plot of median response time
+        Returns a rendered line plots of median response time
 
         @param api_calls_statistics: the api call statistics
-        @return: rendered plot
+        @return: rendered plots
         """
-        plots = []
+        plots = {}
         median_response_statistics = api_calls_statistics.median_response_time_last_30_days()
         for api_alias in median_response_statistics.keys():
             dict_items = median_response_statistics[api_alias].items()
@@ -391,7 +398,40 @@ class Controller:
             y = [v for _,v in dict_items]
             x = [((i+30) % 30) if i!=30 else 30 for i in x]
             plot.line(x, y, line_width=4)
-            plots.append(components(plot))
+            plots[api_alias] = components(plot)
+        return plots
+
+    @staticmethod
+    def api_keys_by_call_plots(api_calls_statistics: ApiCallsStatistics) -> Dict[str, Tuple[Any, Any]]:
+        """
+        Returns rendered plots of api calls by type
+
+        @param api_calls_statistics: the api call statistics
+        @return: rendered plots
+        """
+        plots = {}
+        api_calls_by_type = api_calls_statistics.api_calls_by_type()
+        for api_alias in api_calls_by_type.keys():
+            calls_by_path = api_calls_by_type[api_alias][0]
+            calls_by_method = api_calls_by_type[api_alias][1]
+            calls_by_status = api_calls_by_type[api_alias][2]
+
+            labels, values = zip(*calls_by_path.items())
+            s1 = figure(sizing_mode='scale_width', plot_height=300,x_range=list(labels),
+                        title="Paths called by '%s' server" % api_alias)
+            s1.vbar(x=list(labels), top=values, width=0.9)
+
+            labels, values = zip(*calls_by_method.items())
+            s2 = figure(sizing_mode='scale_width', plot_height=300,x_range=list(labels),
+                        title="Methods called by '%s' server" % api_alias)
+            s2.vbar(x=list(labels), top=values, width=0.9)
+
+            labels, values = zip(*calls_by_status.items())
+            s3 = figure(sizing_mode='scale_width', plot_height=300,x_range=[str(l) for l in labels],
+                        title="Status received by '%s' server" % api_alias)
+            s3.vbar(x=[str(l) for l in labels], top=values, width=0.9)
+
+            plots[api_alias] = components(row(s1, s2, s3))
         return plots
 
     @cross_origin()

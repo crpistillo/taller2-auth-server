@@ -50,3 +50,27 @@ class ApiCallsStatistics:
             median_response_time_by_day = {k:np.median(v) for k,v in median_response_time_by_day.items()}
             median_responses_by_alias[alias] = median_response_time_by_day
         return median_responses_by_alias
+
+    def api_calls_by_type(self) -> Dict[str, List[Dict]]:
+        """
+        Calculates the quantity of api calls by path, method and status code
+
+        @return: a dictionary containing the dictionary of the counts
+        """
+        response_dict = {}
+        for alias in self.api_calls_by_alias.keys():
+            response_dict[alias] = [{},{},{}]
+            for api_call in self.api_calls_by_alias[alias]:
+                if api_call.path not in response_dict[alias][0]:
+                    response_dict[alias][0][api_call.path] = 1
+                else:
+                    response_dict[alias][0][api_call.path] += 1
+                if api_call.method not in response_dict[alias][1]:
+                    response_dict[alias][1][api_call.method] = 1
+                else:
+                    response_dict[alias][1][api_call.method] += 1
+                if api_call.status not in response_dict[alias][2]:
+                    response_dict[alias][2][api_call.status] = 1
+                else:
+                    response_dict[alias][2][api_call.status] += 1
+        return response_dict
