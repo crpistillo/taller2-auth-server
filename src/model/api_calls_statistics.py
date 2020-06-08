@@ -1,5 +1,5 @@
 from typing import List, NamedTuple, Dict, Tuple
-from datetime import datetime
+from datetime import datetime, date
 import numpy as np
 
 class ApiKeyCall(NamedTuple):
@@ -29,7 +29,7 @@ class ApiCallsStatistics:
                 self.api_calls_by_alias[api_call.api_alias] = []
             self.api_calls_by_alias[api_call.api_alias].append(api_call)
 
-    def median_response_time_last_30_days(self) -> Dict[str, Dict[int, float]]:
+    def median_response_time_last_30_days(self) -> Dict[str, Dict[date, float]]:
         """
         Calculates the median response time from the last 30 days for each api
         @return: a dict with the server alias as key and a dict of day: median response time
@@ -43,10 +43,10 @@ class ApiCallsStatistics:
                 days_delta = abs((today_datetime - api_call.timestamp).days)
                 if days_delta > 30:
                     continue
-                if days_delta not in median_response_time_by_day:
-                    median_response_time_by_day[days_delta] = [api_call.time]
+                if api_call.timestamp.date() not in median_response_time_by_day:
+                    median_response_time_by_day[api_call.timestamp.date()] = [api_call.time]
                 else:
-                    median_response_time_by_day[days_delta] += [api_call.time]
+                    median_response_time_by_day[api_call.timestamp.date()] += [api_call.time]
             median_response_time_by_day = {k:np.median(v) for k,v in median_response_time_by_day.items()}
             median_responses_by_alias[alias] = median_response_time_by_day
         return median_responses_by_alias
