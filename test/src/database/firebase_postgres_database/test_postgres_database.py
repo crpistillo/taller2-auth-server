@@ -191,4 +191,5 @@ def test_api_key_call_save(postgres_firebase_database):
     api_call_statistics = postgres_firebase_database.get_api_calls_statistics()
     median_response_dict = api_call_statistics.median_response_time_last_30_days()
     assert "dumb" in median_response_dict
-    assert median_response_dict["dumb"][0] == 0.2
+    assert median_response_dict["dumb"][(datetime.datetime.now() -
+                                         datetime.timedelta(days=0)).date()] == 0.2
