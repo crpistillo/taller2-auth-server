@@ -394,7 +394,7 @@ class Controller:
             dict_items = sorted(median_response_statistics[api_alias].items(), key=lambda x: x[0])
             plot = figure(plot_height=100, sizing_mode='scale_width',
                           title="Median response time from up to 30 days ago for '%s' server" % api_alias)
-            x = [k for k,_ in dict_items]
+            x = [str(k) for k,_ in dict_items]
             y = [v for _,v in dict_items]
             plot.vbar(x=x, top=y, width=0.9)
             plots[api_alias] = components(plot)
