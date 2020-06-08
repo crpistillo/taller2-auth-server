@@ -391,12 +391,15 @@ class Controller:
         plots = {}
         median_response_statistics = api_calls_statistics.median_response_time_last_30_days()
         for api_alias in median_response_statistics.keys():
-            dict_items = sorted(median_response_statistics[api_alias].items(), key=lambda x: x[0])
-            plot = figure(plot_height=100, sizing_mode='scale_width',
-                          title="Median response time from up to 30 days ago for '%s' server" % api_alias)
+            median_reponse_dict = median_response_statistics[api_alias].items()
+            dict_items = sorted(median_reponse_dict, key=lambda x: x[0])
             x = [str(k) for k,_ in dict_items]
             y = [v for _,v in dict_items]
+            plot = figure(plot_height=150, sizing_mode='scale_width',
+                          title="Median response time from up to 30 days ago for '%s' server" % api_alias,
+                          x_range=x)
             plot.vbar(x=x, top=y, width=0.9)
+            plot.xaxis.major_label_orientation = math.pi / 2
             plots[api_alias] = components(plot)
         return plots
 
