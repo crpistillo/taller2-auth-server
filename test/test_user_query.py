@@ -21,19 +21,13 @@ class TestUserQuery(unittest.TestCase):
                               headers={"Content-Type": "application/json"})
             self.api_key = json.loads(response.data)["api_key"]
 
-    def test_querying_unathorized_error(self):
-        with self.app.test_client() as c:
-            response = c.get('/user', query_string={"email": "giancafferata@hotmail.com", "api_key": self.api_key})
-            self.assertEqual(response.status_code, 401)
-
     def test_querying_for_non_existing_user_error(self):
         with self.app.test_client() as c:
             response = c.post('/user/login', data='{"email":"admin@admin.com", "password":"admin"}',
                               headers={"Content-Type": "application/json"},
                               query_string={"api_key": self.api_key})
             token = json.loads(response.data)["login_token"]
-            response = c.get('/user', query_string={"email": "giancafferata@hotmail.com", "api_key": self.api_key},
-                             headers={"Authorization": "Bearer %s" % token})
+            response = c.get('/user', query_string={"email": "giancafferata@hotmail.com", "api_key": self.api_key})
             self.assertEqual(response.status_code, 404)
 
     def test_querying_user_without_email(self):
@@ -42,8 +36,7 @@ class TestUserQuery(unittest.TestCase):
                               headers={"Content-Type": "application/json"},
                               query_string={"api_key": self.api_key})
             token = json.loads(response.data)["login_token"]
-            response = c.get('/user', query_string={"api_key": self.api_key},
-                             headers={"Authorization": "Bearer %s" % token})
+            response = c.get('/user', query_string={"api_key": self.api_key})
             self.assertEqual(response.status_code, 400)
 
     def test_query_for_inexistent_user_after_registering_valid(self):
@@ -57,6 +50,5 @@ class TestUserQuery(unittest.TestCase):
                               query_string={"api_key": self.api_key})
             token = json.loads(response.data)["login_token"]
 
-            response = c.get('/user', query_string={"email": "jian01.cs@gmail.com", "api_key": self.api_key},
-                             headers={"Authorization": "Bearer %s" % token})
+            response = c.get('/user', query_string={"email": "jian01.cs@gmail.com", "api_key": self.api_key})
             self.assertEqual(response.status_code, 404)
