@@ -242,9 +242,6 @@ paths:
         200:
           description: Successful operation
           content: {}
-        400:
-          description: Invalid password
-          content: {}
         403:
           description: Not authorized
           content: {}
@@ -284,13 +281,13 @@ paths:
           description: Successful operation
           content: {}
         400:
-          description: Missing fields or invalid page
-          content: {}
-        401:
-          description: Access token is missing or invalid
+          description: Missing fields, body is not a json or recovery token invalid
           content: {}
         403:
           description: Not authorized
+          content: {}
+        404:
+          description: User not found
           content: {}
       x-codegen-request-body-name: body
   /registered_users:

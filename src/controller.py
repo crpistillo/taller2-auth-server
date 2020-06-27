@@ -229,7 +229,6 @@ class Controller:
         return messages.SUCCESS_JSON, 200
 
     @cross_origin()
-    @auth.login_required
     def users_profile_query(self):
         """
         Handles the user recovering
