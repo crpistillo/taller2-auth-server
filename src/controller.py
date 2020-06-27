@@ -82,7 +82,6 @@ class Controller:
         self.users_delete = api_key_decorator(self.users_delete)
         self.registered_users = api_key_decorator(self.registered_users)
         self.user_login_token_query = api_key_decorator(self.user_login_token_query)
-        self.api_health = api_key_decorator(self.api_health)
 
     @staticmethod
     def api_key_decorator(logger: Logger, database: Database,
