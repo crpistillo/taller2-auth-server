@@ -244,6 +244,8 @@ class Controller:
             return messages.ERROR_JSON % (messages.USER_NOT_FOUND_MESSAGE % email_query), 404
 
         serialized_user_dic = SerializedUser.from_user(user)._asdict()
+        del serialized_user_dic["password"]
+        del serialized_user_dic["admin"]
         return json.dumps(serialized_user_dic), 200
 
     @cross_origin()
