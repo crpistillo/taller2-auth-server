@@ -41,6 +41,31 @@ RECOVER_PASSWORD_MANDATORY_FIELDS = {"email"}
 NEW_PASSWORD_MANDATORY_FIELDS = {"email", "new_password", "token"}
 USERS_REGISTER_MANDATORY_FIELDS = {"email", "password", "phone_number", "fullname"}
 
+database_api_calls: Database = None
+logger_api_calls: Logger = None
+
+
+def api_key_decorator(func: Callable):
+    global database_api_calls
+    global logger_api_calls
+    def wrapper(*args, **kwargs):
+        api_key = request.args.get('api_key')
+        if not api_key:
+            logger_api_calls.debug(messages.API_KEY_NOT_FOUND)
+            return messages.ERROR_JSON % messages.API_KEY_NOT_FOUND, 401
+        if database_api_calls.check_api_key(api_key):
+            start = timer()
+            result = func(*args, **kwargs)
+            database_api_calls.register_api_call(api_key, request.path, request.method, result.status_code,
+                                                 timer() - start, datetime.datetime.now())
+            return result
+        else:
+            logger_api_calls.debug(messages.API_KEY_INVALID)
+            return messages.ERROR_JSON % messages.API_KEY_INVALID, 403
+
+    return wrapper
+
+
 
 class Controller:
     logger = logging.getLogger(__name__)
@@ -54,7 +79,8 @@ class Controller:
         :param api_key_secret_generator_env_name:
         the name of the env variable containing the api key secret generator
         """
-        global uses_api_key
+        global database_api_calls
+        global logger_api_calls
 
         @auth.verify_token
         def verify_token(token) -> Optional[User]:
@@ -72,36 +98,12 @@ class Controller:
         self.database = database
         self.email_service = email_service
         self.api_key_secret_generator = os.environ[api_key_secret_generator_env_name]
-        api_key_decorator = partial(self.api_key_decorator, self.logger, database)
-        self.users_recover_password = api_key_decorator(self.users_recover_password)
-        self.users_login = api_key_decorator(self.users_login)
-        self.users_new_password = api_key_decorator(self.users_new_password)
-        self.users_register = api_key_decorator(self.users_register)
-        self.users_profile_query = api_key_decorator(self.users_profile_query)
-        self.users_profile_update = api_key_decorator(self.users_profile_update)
-        self.users_delete = api_key_decorator(self.users_delete)
-        self.registered_users = api_key_decorator(self.registered_users)
-        self.user_login_token_query = api_key_decorator(self.user_login_token_query)
 
-    @staticmethod
-    def api_key_decorator(logger: Logger, database: Database,
-                          func: Callable):
-        def wrapper():
-            api_key = request.args.get('api_key')
-            if not api_key:
-                logger.debug(messages.API_KEY_NOT_FOUND)
-                return messages.ERROR_JSON % messages.API_KEY_NOT_FOUND, 401
-            if database.check_api_key(api_key):
-                start = timer()
-                result = func()
-                database.register_api_call(api_key, request.path, request.method, result.status_code,
-                                           timer()-start, datetime.datetime.now())
-                return result
-            else:
-                logger.debug(messages.API_KEY_INVALID)
-                return messages.ERROR_JSON % messages.API_KEY_INVALID, 403
-        return wrapper
+        database_api_calls = self.database
+        logger_api_calls = self.logger
 
+
+    @api_key_decorator
     @cross_origin()
     def users_login(self):
         """
@@ -133,6 +135,7 @@ class Controller:
             self.logger.debug(messages.WRONG_CREDENTIALS_MESSAGE)
             return messages.ERROR_JSON % messages.WRONG_CREDENTIALS_MESSAGE, 403
 
+    @api_key_decorator
     @cross_origin()
     def users_recover_password(self):
         """
@@ -160,6 +163,7 @@ class Controller:
         self.email_service.send_recovery_email(user, user_token)
         return messages.SUCCESS_JSON, 200
 
+    @api_key_decorator
     @cross_origin()
     def users_new_password(self):
         """
@@ -194,6 +198,7 @@ class Controller:
             self.logger.debug(messages.INVALID_TOKEN_MESSAGE % content["email"])
             return messages.ERROR_JSON % (messages.INVALID_TOKEN_MESSAGE % content["email"]), 400
 
+    @api_key_decorator
     @cross_origin()
     def users_register(self):
         """
@@ -227,6 +232,7 @@ class Controller:
         self.database.save_user(user)
         return messages.SUCCESS_JSON, 200
 
+    @api_key_decorator
     @cross_origin()
     def users_profile_query(self):
         """
@@ -248,6 +254,7 @@ class Controller:
         del serialized_user_dic["admin"]
         return json.dumps(serialized_user_dic), 200
 
+    @api_key_decorator
     @cross_origin()
     @auth.login_required
     def users_profile_update(self):
@@ -278,7 +285,7 @@ class Controller:
                                   phone_number=phone_numer, photo=photo)
         return messages.SUCCESS_JSON, 200
 
-
+    @api_key_decorator
     @cross_origin()
     @auth.login_required
     def users_delete(self):
@@ -301,6 +308,7 @@ class Controller:
         self.database.delete_user(email_query)
         return messages.SUCCESS_JSON, 200
 
+    @api_key_decorator
     @cross_origin()
     @auth.login_required
     def registered_users(self):
@@ -329,6 +337,7 @@ class Controller:
                             "pages": pages}
         return json.dumps(registered_users), 200
 
+    @api_key_decorator
     @auth.login_required
     @cross_origin()
     def user_login_token_query(self):
