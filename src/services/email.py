@@ -10,7 +10,7 @@ class EmailService:
     """
     Model entity for sending an email
     """
-    logger = logging.getLogger(__name__)
+    logger = logging.getLogger(__module__)
 
     def __init__(self, sendgrid_email_env_name: str, sendgrid_api_key_env_name: str):
         """

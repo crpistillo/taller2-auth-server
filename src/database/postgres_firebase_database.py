@@ -104,7 +104,7 @@ class PostgresFirebaseDatabase(Database):
     """
     Postgres & Firebase implementation of Database abstraction
     """
-    logger = logging.getLogger(__name__)
+    logger = logging.getLogger(__module__)
     # TODO: avoid sql injection
     def __init__(self, users_table_name: str, recovery_token_table_name: str, api_key_table_name: str,
                  api_calls_table_name: str, postgr_host_env_name: str,

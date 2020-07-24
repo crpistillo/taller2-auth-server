@@ -68,7 +68,7 @@ def api_key_decorator(func: Callable):
 
 
 class Controller:
-    logger = logging.getLogger(__name__)
+    logger = logging.getLogger(__module__)
     def __init__(self, database: Database, email_service: EmailService,
                  api_key_secret_generator_env_name: str):
         """
@@ -251,7 +251,6 @@ class Controller:
 
         serialized_user_dic = SerializedUser.from_user(user)._asdict()
         del serialized_user_dic["password"]
-        del serialized_user_dic["admin"]
         return json.dumps(serialized_user_dic), 200
 
     @api_key_decorator

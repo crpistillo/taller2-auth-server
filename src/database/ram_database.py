@@ -24,7 +24,7 @@ class RamDatabase(Database):
     """
     serialized_users: Dict[str, SerializedUser]
     serialized_user_recovery_tokens: Dict[str, SerializedUserRecoveryToken]
-    logger = logging.getLogger(__name__)
+    logger = logging.getLogger(__module__)
     def __init__(self):
         self.serialized_users = {}
         self.serialized_user_recovery_tokens = {}
