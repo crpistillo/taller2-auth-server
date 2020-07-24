@@ -1,4 +1,4 @@
-from typing import NoReturn, Dict, Tuple, List
+from typing import NoReturn, Dict, Tuple, List, Optional
 from src.model.user import User
 from src.model.user_recovery_token import UserRecoveryToken
 from src.database.database import Database
@@ -144,6 +144,15 @@ class PostgresFirebaseDatabase(Database):
             raise ConnectionError("Unable to connect to firebase")
         self.firebase_api_key = os.environ[firebase_api_key_env_name]
 
+    @staticmethod
+    def safe_query_run(logger, connection, cursor, query: str, params: Optional[Tuple] = None):
+        try:
+            cursor.execute(query, params)
+        except Exception as err:
+            logger.exception("Query error")
+            connection.rollback()
+            raise err
+
     def save_user(self, user: User) -> NoReturn:
         """
         Saves an user
@@ -161,11 +170,12 @@ class PostgresFirebaseDatabase(Database):
         except NotFoundError:
             auth.create_user(**{"email": serialized_user.email, "password": serialized_user.password})
 
-
-        cursor.execute(USER_INSERT_QUERY.format(self.users_table_name),
-                       (serialized_user.email, serialized_user.fullname,
-                        serialized_user.phone_number, serialized_user.photo, serialized_user.password,
-                        serialized_user.admin))
+        self.safe_query_run(self.logger, self.conn, cursor,
+                            USER_INSERT_QUERY.format(self.users_table_name),
+                            (serialized_user.email, serialized_user.fullname,
+                             serialized_user.phone_number, serialized_user.photo, serialized_user.password,
+                             serialized_user.admin)
+                            )
         self.conn.commit()
         cursor.close()
 
@@ -181,7 +191,9 @@ class PostgresFirebaseDatabase(Database):
         """
         cursor = self.conn.cursor()
         self.logger.debug("Loading user with email %s" % email)
-        cursor.execute(SEARCH_USER_QUERY % (self.users_table_name, email))
+        self.safe_query_run(self.logger, self.conn, cursor,
+                            SEARCH_USER_QUERY % (self.users_table_name, email)
+                            )
         result = cursor.fetchone()
         if not result:
             raise UserNotFoundError
@@ -253,7 +265,8 @@ class PostgresFirebaseDatabase(Database):
         query = RECOVERY_TOKEN_INSERT_QUERY % (self.recovery_token_table_name, serialized_user_recovery_token.email,
                                                serialized_user_recovery_token.token,
                                                serialized_user_recovery_token.timestamp)
-        cursor.execute(query)
+        self.safe_query_run(self.logger, self.conn, cursor,
+                            query)
         self.conn.commit()
         cursor.close()
 
@@ -268,7 +281,8 @@ class PostgresFirebaseDatabase(Database):
         """
         self.logger.debug("Loading user_recovery_token with email %s" % email)
         cursor = self.conn.cursor()
-        cursor.execute(RECOVERY_TOKEN_QUERY % (self.recovery_token_table_name, email))
+        self.safe_query_run(self.logger, self.conn, cursor,
+                            RECOVERY_TOKEN_QUERY % (self.recovery_token_table_name, email))
         result = cursor.fetchone()
         if not result:
             raise UserRecoveryTokenNotFoundError
@@ -283,8 +297,9 @@ class PostgresFirebaseDatabase(Database):
         """
         self.logger.debug("Deleting user with email %s" % email)
         cursor = self.conn.cursor()
-        cursor.execute(DELETE_USER_QUERY % (self.recovery_token_table_name, email,
-                                            self.users_table_name, email))
+        self.safe_query_run(self.logger, self.conn, cursor,
+                            DELETE_USER_QUERY % (self.recovery_token_table_name, email,
+                                                 self.users_table_name, email))
         self.conn.commit()
         cursor.close()
         firebase_uid = auth.get_user_by_email(email).uid
@@ -307,7 +322,8 @@ class PostgresFirebaseDatabase(Database):
         pages = math.ceil(result[0] / users_per_page)
         if pages <= page:
             raise NoMoreUsers
-        cursor.execute(PAGINATED_LIST_QUERY % (self.users_table_name, users_per_page, start))
+        self.safe_query_run(self.logger, self.conn, cursor,
+                            PAGINATED_LIST_QUERY % (self.users_table_name, users_per_page, start))
         result = cursor.fetchall()
         # email, fullname, phone_number, photo, password, admin
         result = [SerializedUser(email=r[0], fullname=r[1], phone_number=r[2],
@@ -329,7 +345,8 @@ class PostgresFirebaseDatabase(Database):
         query = API_KEY_INSERT_OR_UPDATE % (self.api_key_table_name,
                                             api_key.get_alias(), api_key.get_api_key_hash(),
                                             api_key.health_endpoint)
-        cursor.execute(query)
+        self.safe_query_run(self.logger, self.conn, cursor,
+                            query)
         self.conn.commit()
         cursor.close()
 
@@ -342,7 +359,8 @@ class PostgresFirebaseDatabase(Database):
         self.logger.debug("Checking if api key is valid")
         cursor = self.conn.cursor()
         query = CHECK_API_KEY % (self.api_key_table_name, api_key_str)
-        cursor.execute(query)
+        self.safe_query_run(self.logger, self.conn, cursor,
+                            query)
         api_key_valid = len(cursor.fetchall()) == 1
         cursor.close()
         return api_key_valid
@@ -366,7 +384,8 @@ class PostgresFirebaseDatabase(Database):
         self.logger.debug("Saving api call from %s" % api_alias)
         query = SAVE_API_CALL % (self.api_calls_table_name, api_alias,
                                  path, method, status, time, timestamp.isoformat())
-        cursor.execute(query)
+        self.safe_query_run(self.logger, self.conn, cursor,
+                            query)
         self.conn.commit()
         cursor.close()
 
@@ -377,7 +396,8 @@ class PostgresFirebaseDatabase(Database):
         @return: an object containing the api call statistics
         """
         cursor = self.conn.cursor()
-        cursor.execute(GET_ALL_30_DAYS_API_CALLS % self.api_calls_table_name)
+        self.safe_query_run(self.logger, self.conn, cursor,
+                            GET_ALL_30_DAYS_API_CALLS % self.api_calls_table_name)
         result = cursor.fetchall()
         result = [ApiKeyCall(*r)
                   for r in result]
