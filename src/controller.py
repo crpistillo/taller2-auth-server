@@ -32,7 +32,7 @@ from src.model.api_calls_statistics import ApiCallsStatistics
 import datetime
 import os
 import asyncio
-import grequests
+import requests
 
 auth = HTTPTokenAuth(scheme='Bearer')
 
@@ -455,9 +455,13 @@ class Controller:
         """
         registered_api_keys = self.database.get_registered_api_keys()
         alises = [alias for alias,_ in registered_api_keys]
-        request_list = [grequests.get(endpoint, timeout=SERVER_STATE_TIMEOUT) for _,endpoint in registered_api_keys]
-        request_list = grequests.map(request_list)
-        statuses = [r.status_code == 200 if r else False for r in request_list]
+        statuses = []
+        for _, endpoint in registered_api_keys:
+            try:
+                r = requests.get(endpoint, timeout=SERVER_STATE_TIMEOUT)
+                statuses.append(r.status_code == 200)
+            except Exception:
+                statuses.append(False)
         result = [{"server_alias": alias, "is_healthy": health} for alias, health in zip(alises,statuses)]
         return json.dumps(result), 200
 

@@ -16,4 +16,3 @@ Pillow==7.1.2
 imagehash==4.1.0
 bokeh==2.0.2
 numpy==1.18.4
-grequests==0.6.0
