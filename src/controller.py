@@ -31,6 +31,8 @@ import math
 from src.model.api_calls_statistics import ApiCallsStatistics
 import datetime
 import os
+import asyncio
+import grequests
 
 auth = HTTPTokenAuth(scheme='Bearer')
 
@@ -40,6 +42,7 @@ API_KEY_CREATE_MANDATORY_FIELDS = {"alias", "secret"}
 RECOVER_PASSWORD_MANDATORY_FIELDS = {"email"}
 NEW_PASSWORD_MANDATORY_FIELDS = {"email", "new_password", "token"}
 USERS_REGISTER_MANDATORY_FIELDS = {"email", "password", "phone_number", "fullname"}
+SERVER_STATE_TIMEOUT = 3
 
 database_api_calls: Database = None
 logger_api_calls: Logger = None
@@ -443,6 +446,20 @@ class Controller:
 
             plots[api_alias] = components(row(s1, s2, s3))
         return plots
+
+    def app_server_list(self):
+        """
+        Get the app servers list and its health
+
+        @return: a json containing the data
+        """
+        registered_api_keys = self.database.get_registered_api_keys()
+        alises = [alias for alias,_ in registered_api_keys]
+        request_list = [grequests.get(endpoint, timeout=SERVER_STATE_TIMEOUT) for _,endpoint in registered_api_keys]
+        request_list = grequests.map(request_list)
+        statuses = [r.status_code == 200 if r else False for r in request_list]
+        result = [{"server_alias": alias, "is_healthy": health} for alias, health in zip(alises,statuses)]
+        return json.dumps(result), 200
 
     @cross_origin()
     def api_health(self):

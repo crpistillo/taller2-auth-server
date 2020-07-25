@@ -30,3 +30,10 @@ class ApiKey:
         Return the api-key alias
         """
         return self.alias
+
+    def get_health_endpoint(self) -> str:
+        """
+        Gets the health endpoint
+        @return: the health enpoint string
+        """
+        return self.health_endpoint

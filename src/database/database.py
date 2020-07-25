@@ -166,4 +166,10 @@ class Database:
         @return: an object containing the api call statistics
         """
 
+    @abstractmethod
+    def get_registered_api_keys(self) -> List[Tuple[str, str]]:
+        """
+        Queries the app servers
 
+        @return: a list of app servers with tuples (name, health endpoint)
+        """

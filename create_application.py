@@ -70,6 +70,8 @@ def create_application_with_controller(controller: Controller):
                      methods=["GET"])
     app.add_url_rule('/api_key', 'new_api_key', controller.new_api_key,
                      methods=["POST"])
+    app.add_url_rule('/app_servers', 'app_server_list', controller.app_server_list,
+                     methods=["GET"])
     app.add_url_rule('/server_statistics', 'show_statistics', controller.show_statistics)
 
     return app

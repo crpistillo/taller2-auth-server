@@ -187,3 +187,15 @@ class RamDatabase(Database):
             api_calls_tuples += [ApiKeyCall(self.api_keys[api_key].get_alias(), *call)
                                  for call in self.api_calls[api_key]]
         return ApiCallsStatistics(api_calls_tuples)
+
+    def get_registered_api_keys(self) -> List[Tuple[str, str]]:
+        """
+        Queries the app servers
+
+        @return: a list of app servers with tuples (name, health endpoint)
+        """
+        result = []
+        for api_key in self.api_keys.values():
+            result.append((api_key.get_alias(), api_key.get_health_endpoint()))
+        return result
+
