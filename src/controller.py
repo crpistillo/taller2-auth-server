@@ -51,6 +51,7 @@ logger_api_calls: Logger = None
 def api_key_decorator(func: Callable):
     global database_api_calls
     global logger_api_calls
+
     def wrapper(*args, **kwargs):
         api_key = request.args.get('api_key')
         if not api_key:
@@ -59,8 +60,12 @@ def api_key_decorator(func: Callable):
         if database_api_calls.check_api_key(api_key):
             start = timer()
             result = func(*args, **kwargs)
-            database_api_calls.register_api_call(api_key, request.path, request.method, result.status_code,
-                                                 timer() - start, datetime.datetime.now())
+            if isinstance(result, tuple):
+                database_api_calls.register_api_call(api_key, request.path, request.method, result[1],
+                                                     timer() - start, datetime.datetime.now())
+            else:
+                database_api_calls.register_api_call(api_key, request.path, request.method, result.status_code,
+                                                     timer() - start, datetime.datetime.now())
             return result
         else:
             logger_api_calls.debug(messages.API_KEY_INVALID)
@@ -69,9 +74,9 @@ def api_key_decorator(func: Callable):
     return wrapper
 
 
-
 class Controller:
     logger = logging.getLogger(__module__)
+
     def __init__(self, database: Database, email_service: EmailService,
                  api_key_secret_generator_env_name: str):
         """
@@ -105,9 +110,7 @@ class Controller:
         database_api_calls = self.database
         logger_api_calls = self.logger
 
-
     @api_key_decorator
-    @cross_origin()
     def users_login(self):
         """
         Handles the user login
@@ -133,13 +136,12 @@ class Controller:
             user_dict = SerializedUser.from_user(user)._asdict()
             del user_dict["password"]
             return json.dumps({"login_token": self.database.login(user),
-                               "user": user_dict})
+                               "user": user_dict}), 200
         else:
             self.logger.debug(messages.WRONG_CREDENTIALS_MESSAGE)
             return messages.ERROR_JSON % messages.WRONG_CREDENTIALS_MESSAGE, 403
 
     @api_key_decorator
-    @cross_origin()
     def users_recover_password(self):
         """
         Handles the user password recovering
@@ -167,7 +169,6 @@ class Controller:
         return messages.SUCCESS_JSON, 200
 
     @api_key_decorator
-    @cross_origin()
     def users_new_password(self):
         """
         Handles the new password setting
@@ -202,7 +203,6 @@ class Controller:
             return messages.ERROR_JSON % (messages.INVALID_TOKEN_MESSAGE % content["email"]), 400
 
     @api_key_decorator
-    @cross_origin()
     def users_register(self):
         """
         Handles the user registration
@@ -231,12 +231,11 @@ class Controller:
         except InvalidPhoneNumberError:
             self.logger.debug(messages.USER_INVALID_PHONE_ERROR_MESSAGE % (content["phone_number"], content["email"]))
             return messages.ERROR_JSON % (messages.USER_INVALID_PHONE_ERROR_MESSAGE %
-                                 (content["phone_number"], content["email"])), 400
+                                          (content["phone_number"], content["email"])), 400
         self.database.save_user(user)
         return messages.SUCCESS_JSON, 200
 
     @api_key_decorator
-    @cross_origin()
     def users_profile_query(self):
         """
         Handles the user recovering
@@ -257,7 +256,6 @@ class Controller:
         return json.dumps(serialized_user_dic), 200
 
     @api_key_decorator
-    @cross_origin()
     @auth.login_required
     def users_profile_update(self):
         """
@@ -288,7 +286,6 @@ class Controller:
         return messages.SUCCESS_JSON, 200
 
     @api_key_decorator
-    @cross_origin()
     @auth.login_required
     def users_delete(self):
         """
@@ -311,7 +308,6 @@ class Controller:
         return messages.SUCCESS_JSON, 200
 
     @api_key_decorator
-    @cross_origin()
     @auth.login_required
     def registered_users(self):
         """
@@ -341,7 +337,6 @@ class Controller:
 
     @api_key_decorator
     @auth.login_required
-    @cross_origin()
     def user_login_token_query(self):
         """
         Queries the user for a corresponding login token
@@ -351,7 +346,6 @@ class Controller:
         serialized_user_dic = SerializedUser.from_user(user)._asdict()
         return json.dumps(serialized_user_dic), 200
 
-    @cross_origin()
     def new_api_key(self):
         """
         Gets a new api key for a server
@@ -375,7 +369,6 @@ class Controller:
         self.database.save_api_key(api_key)
         return json.dumps({"api_key": api_key.get_api_key_hash()}), 200
 
-    @cross_origin()
     def show_statistics(self):
         """
         Show server statistics
@@ -404,8 +397,8 @@ class Controller:
         for api_alias in median_response_statistics.keys():
             median_reponse_dict = median_response_statistics[api_alias].items()
             dict_items = sorted(median_reponse_dict, key=lambda x: x[0])
-            x = [str(k) for k,_ in dict_items]
-            y = [v for _,v in dict_items]
+            x = [str(k) for k, _ in dict_items]
+            y = [v for _, v in dict_items]
             plot = figure(plot_height=150, sizing_mode='scale_width',
                           title="Median response time from up to 30 days ago for '%s' server" % api_alias,
                           x_range=x)
@@ -430,17 +423,17 @@ class Controller:
             calls_by_status = api_calls_by_type[api_alias][2]
 
             labels, values = zip(*calls_by_path.items())
-            s1 = figure(sizing_mode='scale_width', plot_height=300,x_range=list(labels),
+            s1 = figure(sizing_mode='scale_width', plot_height=300, x_range=list(labels),
                         title="Paths called by '%s' server" % api_alias)
             s1.vbar(x=list(labels), top=values, width=0.9)
 
             labels, values = zip(*calls_by_method.items())
-            s2 = figure(sizing_mode='scale_width', plot_height=300,x_range=list(labels),
+            s2 = figure(sizing_mode='scale_width', plot_height=300, x_range=list(labels),
                         title="Methods called by '%s' server" % api_alias)
             s2.vbar(x=list(labels), top=values, width=0.9)
 
             labels, values = zip(*calls_by_status.items())
-            s3 = figure(sizing_mode='scale_width', plot_height=300,x_range=[str(l) for l in labels],
+            s3 = figure(sizing_mode='scale_width', plot_height=300, x_range=[str(l) for l in labels],
                         title="Status received by '%s' server" % api_alias)
             s3.vbar(x=[str(l) for l in labels], top=values, width=0.9)
 
@@ -454,7 +447,7 @@ class Controller:
         @return: a json containing the data
         """
         registered_api_keys = self.database.get_registered_api_keys()
-        alises = [alias for alias,_ in registered_api_keys]
+        alises = [alias for alias, _ in registered_api_keys]
         statuses = []
         for _, endpoint in registered_api_keys:
             try:
@@ -462,10 +455,9 @@ class Controller:
                 statuses.append(r.status_code == 200)
             except Exception:
                 statuses.append(False)
-        result = [{"server_alias": alias, "is_healthy": health} for alias, health in zip(alises,statuses)]
+        result = [{"server_alias": alias, "is_healthy": health} for alias, health in zip(alises, statuses)]
         return json.dumps(result), 200
 
-    @cross_origin()
     def api_health(self):
         """
         A dumb api health

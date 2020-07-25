@@ -8,6 +8,8 @@ servers:
 tags:
 - name: user
   description: Operations with user
+- name: app_server
+  description: App servers related
 paths:
   /user:
     get:
@@ -331,12 +333,46 @@ paths:
           description: User not found
           content: {}
       x-codegen-request-body-name: body
+  /api_key:
+    post:
+      tags:
+        - app_server
+      summary: Creates a new api key for an app server
+      description: Creates a new api key for an app server
+      requestBody:
+        description: App server data
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                secret:
+                  type: string
+                alias:
+                  type: string
+                health_endpoint:
+                  type: string
+        required: true
+      responses:
+        200:
+          description: Successful operation
+          content: {}
+  /server_statistics:
+    get:
+      tags:
+        - app_server
+      summary: Queries app server usage statistics
+      description: Queries app server usage statistics
+      responses:
+        200:
+          description: Successful operation
+          content: {}
   /app_servers:
     get:
+      tags:
+        - app_server
       summary: Queries app servers
       description: Queries the app server statuses
-      security:
-        - bearerAuth: []
       responses:
         200:
           description: Successful operation
