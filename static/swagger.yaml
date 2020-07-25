@@ -292,6 +292,8 @@ paths:
       x-codegen-request-body-name: body
   /registered_users:
     get:
+      tags:
+        - user
       summary: Get a paginated list of registered users
       description: Get a paginated list of registered users
       parameters:
@@ -329,6 +331,16 @@ paths:
           description: User not found
           content: {}
       x-codegen-request-body-name: body
+  /app_servers:
+    get:
+      summary: Queries app servers
+      description: Queries the app server statuses
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Successful operation
+          content: {}
 components:
   securitySchemes:
     bearerAuth:
