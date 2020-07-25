@@ -22,6 +22,8 @@ from psycopg2.sql import Identifier, SQL
 import logging
 import os
 import json
+import gevent.monkey
+gevent.monkey.patch_all()
 import requests
 import math
 import datetime
