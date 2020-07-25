@@ -89,6 +89,11 @@ FROM %s
 WHERE api_key='%s'
 """
 
+GET_APP_SERVERS_QUERY = """
+SELECT alias, health_endpoint
+FROM %s 
+"""
+
 SAVE_API_CALL = """
 INSERT INTO %s (alias, path, method, status, time, timestamp)
 VALUES ('%s', '%s', '%s', '%d', '%f', '%s')
@@ -403,3 +408,18 @@ class PostgresFirebaseDatabase(Database):
                   for r in result]
         cursor.close()
         return ApiCallsStatistics(result)
+
+    def get_registered_api_keys(self) -> List[Tuple[str, str]]:
+        """
+        Queries the app servers
+
+        @return: a list of app servers with tuples (name, health endpoint)
+        """
+        self.logger.debug("Listing app servers")
+        cursor = self.conn.cursor()
+        query = GET_APP_SERVERS_QUERY % self.api_key_table_name
+        self.safe_query_run(self.logger, self.conn, cursor,
+                            query)
+        result = cursor.fetchall()
+        cursor.close()
+        return result

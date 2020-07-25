@@ -193,3 +193,11 @@ def test_api_key_call_save(postgres_firebase_database):
     assert "dumb" in median_response_dict
     assert median_response_dict["dumb"][(datetime.datetime.now() -
                                          datetime.timedelta(days=0)).date()] == 0.2
+
+def test_api_key_list(postgres_firebase_database):
+    api_key = ApiKey("test", "dumb", "google.com")
+    postgres_firebase_database.save_api_key(api_key)
+    registered_api_keys = postgres_firebase_database.get_registered_api_keys()
+    assert len(registered_api_keys) == 1
+    assert registered_api_keys[0][0] == "test"
+    assert registered_api_keys[0][1] == "google.com"
